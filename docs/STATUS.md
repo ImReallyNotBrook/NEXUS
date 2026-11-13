@@ -268,3 +268,15 @@ Updated: 2026-11-14
 
 
 - Latest Pages workflow run for commit `1bc618a324927b591c0a7087e59cf680608c2e9f` (run `43513945778`) completed with failure before exposing any job steps or logs. Deployment remains unverified; the failure cause cannot be diagnosed from the available GitHub job metadata.
+
+## Gap-aware protective-order backtest increment
+
+- Added optional long-only stop-loss and take-profit orders to the deterministic spot backtester; disabled unless explicitly configured.
+- Protective orders activate only from the candle after entry, avoiding ambiguous entry-candle high/low ordering.
+- Stop-market gaps fill at the opening price with adverse slippage and fees. Intrabar stop fills use the stop level plus adverse slippage. Take-profit limits fill at target or a better opening price on a gap up; fees apply and adverse market slippage does not.
+- When both stop and target are touched intrabar, the simulator selects the adverse stop because OHLC data cannot reveal the path. Strategy-generated next-open exits retain priority.
+- Trade ledger now records whether the exit was a strategy signal, stop-loss or take-profit.
+- Added focused resolver and backtest integration specifications for intrabar triggers, stop gaps, target gaps, both-level ambiguity, fee/slippage treatment and entry-candle exclusion.
+- Added `docs/PROTECTIVE_ORDER_MODEL.md` describing assumptions and execution-model limitations.
+- These tests have been committed but not executed. Full Vitest, production build, hosted CI and deployment remain unverified. No billing changes or live execution capability were introduced.
+
