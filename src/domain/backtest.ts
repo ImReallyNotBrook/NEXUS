@@ -8,6 +8,8 @@ export interface BacktestConfig {
   feeRate: number;
   slippageBps: number;
   allocationFraction: number;
+  /** Number of leading candles used only as strategy context, not traded or reported. */
+  warmupBars?: number;
 }
 
 export interface BacktestTrade {
@@ -56,6 +58,10 @@ export function runBacktest(
   if (!Number.isFinite(allocationFraction) || allocationFraction <= 0 || allocationFraction > 1) throw new RangeError("allocationFraction must be in (0, 1]");
 
   const candles = validateCandles(inputCandles);
+  const warmupBars = config.warmupBars ?? 0;
+  if (!Number.isSafeInteger(warmupBars) || warmupBars < 0 || (candles.length > 0 && warmupBars >= candles.length)) {
+    throw new RangeError("warmupBars must be a non-negative integer smaller than the candle count");
+  }
   if (candles.some((candle) => candle.open <= 0 || candle.high <= 0 || candle.low <= 0 || candle.close <= 0)) {
     throw new RangeError("Spot backtests require strictly positive OHLC prices");
   }
@@ -71,8 +77,8 @@ export function runBacktest(
   for (let i = 0; i < candles.length; i += 1) {
     const candle = candles[i];
 
-    // Orders generated at the previous close fill at this candle's open.
-    if (pending === "buy" && position === null) {
+    // Warm-up candles establish historical context but cannot generate or fill test trades.
+    if (i >= warmupBars && pending === "buy" && position === null) {
       const fillPrice = candle.open * (1 + slippage);
       const budget = Math.min(cash, cash * allocationFraction);
       const quantity = budget / (fillPrice * (1 + feeRate));
@@ -84,7 +90,7 @@ export function runBacktest(
         totalFees += fee;
         position = { entryTimestamp: candle.timestamp, entryPrice: fillPrice, quantity, entryFee: fee, entryCost };
       }
-    } else if (pending === "sell" && position !== null) {
+    } else if (i >= warmupBars && pending === "sell" && position !== null) {
       const fillPrice = candle.open * (1 - slippage);
       const notional = position.quantity * fillPrice;
       const exitFee = notional * feeRate;
@@ -106,17 +112,21 @@ export function runBacktest(
     }
     pending = "hold";
 
-    const positionValue = position ? position.quantity * candle.close : 0;
-    const equity = cash + positionValue;
-    equityCurve.push({ timestamp: candle.timestamp, equity, cash, positionValue });
+    if (i >= warmupBars) {
+      const positionValue = position ? position.quantity * candle.close : 0;
+      const equity = cash + positionValue;
+      equityCurve.push({ timestamp: candle.timestamp, equity, cash, positionValue });
 
-    // The strategy receives only candles through the current close; future bars are inaccessible.
-    const history = candles.slice(0, i + 1).map((item) => Object.freeze({ ...item }));
-    const signal = evaluate(Object.freeze(history));
-    if (signal !== "buy" && signal !== "sell" && signal !== "hold") {
-      throw new TypeError("Strategy returned an invalid signal");
+      // The strategy receives only candles through the current close; future bars are inaccessible.
+      const history = candles.slice(0, i + 1).map((item) => Object.freeze({ ...item }));
+      const signal = evaluate(Object.freeze(history));
+      if (signal !== "buy" && signal !== "sell" && signal !== "hold") {
+        throw new TypeError("Strategy returned an invalid signal");
+      }
+      pending = signal;
+    } else {
+      pending = "hold";
     }
-    pending = signal;
   }
 
   const endingEquity = equityCurve.length ? equityCurve[equityCurve.length - 1].equity : initialCapital;
