@@ -27,7 +27,7 @@ Updated: 2026-11-14
 - Full Vite production build and Vitest suite have not yet been run in a dependency-installed project environment.
 
 ## Current limitations
-- No market data provider connected.
+- Live endpoint connectivity has not been verified; the public Binance adapter is implemented and the dashboard attempts a public snapshot.
 - No persistent backend or cloud database.
 - No deployment configured or claimed.
 - No live trading or exchange private credentials.
