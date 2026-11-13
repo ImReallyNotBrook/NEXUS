@@ -6,6 +6,7 @@ export type QualityIssueCode =
   | "INVALID_CANDLES"
   | "NO_CANDLES"
   | "CANDLE_GAP"
+  | "MISALIGNED_CANDLE"
   | "ZERO_VOLUME"
   | "STALE_SNAPSHOT"
   | "FUTURE_SNAPSHOT"
@@ -86,6 +87,17 @@ export function validateSnapshotQuality(
     issues.push({ code: "FUTURE_SNAPSHOT", severity: "error", message: "Snapshot fetch timestamp is in the future" });
   } else if (options.now - snapshot.fetchedAt > options.maxAgeMs || snapshot.stale) {
     issues.push({ code: "STALE_SNAPSHOT", severity: "error", message: "Snapshot is stale or older than the permitted age" });
+  }
+
+  for (const candle of validated) {
+    if (candle.timestamp % options.intervalMs !== 0) {
+      issues.push({
+        code: "MISALIGNED_CANDLE",
+        severity: "error",
+        message: "Candle timestamp is not aligned to the requested UTC interval",
+        candleTimestamp: candle.timestamp,
+      });
+    }
   }
 
   for (let index = 1; index < validated.length; index += 1) {
