@@ -14,6 +14,6 @@ NEXUS is a mobile-first, research-led trading intelligence platform. The initial
 
 ## Development
 
-See [AGENTS.md](AGENTS.md) for engineering rules and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system boundaries.
+See [AGENTS.md](AGENTS.md) for engineering rules, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system boundaries, [docs/PAPER_TRADING.md](docs/PAPER_TRADING.md) for simulation assumptions, and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the free Android deployment path.
 
 The initial frontend is a static TypeScript application. It must remain usable from a modern Android browser and must not depend on a permanently running backend.
