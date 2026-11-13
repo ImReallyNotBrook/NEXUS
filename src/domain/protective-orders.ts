@@ -45,8 +45,8 @@ export function resolveLongProtectiveExit(
   }
   validateProtectiveExitConfig(config);
 
-  const stop = config.stopLossPct !== undefined ? entryPrice * (1 - config.stopLossPct / 100) : null;
-  const target = config.takeProfitPct !== undefined ? entryPrice * (1 + config.takeProfitPct / 100) : null;
+  const stop = config.stopLossPct !== undefined ? entryPrice - (entryPrice * config.stopLossPct) / 100 : null;
+  const target = config.takeProfitPct !== undefined ? entryPrice + (entryPrice * config.takeProfitPct) / 100 : null;
 
   // Opening gaps are observable before the rest of the candle's range.
   if (stop !== null && candle.open <= stop) {
