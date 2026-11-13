@@ -41,6 +41,10 @@ export function createResearchRunSettings(input: ResearchRunInput): ResearchRunS
       input.trainBars < 100 || input.testBars < 20 || input.trainBars + input.testBars + 2 > input.candleCount) {
     throw new RangeError("Training/test windows are invalid for the selected history size");
   }
+  const estimatedFoldCount = Math.floor((input.candleCount - input.trainBars - 2) / input.testBars) + 1;
+  if (estimatedFoldCount > 40) {
+    throw new RangeError("This configuration creates too many folds for a phone. Increase test bars or training bars (maximum 40 folds).");
+  }
   if (!Number.isFinite(input.feeBps) || input.feeBps < 0 || input.feeBps > 100 ||
       !Number.isFinite(input.slippageBps) || input.slippageBps < 0 || input.slippageBps > 500) {
     throw new RangeError("Fee must be 0–100 bps and slippage 0–500 bps");
@@ -97,6 +101,7 @@ function renderReport(target: HTMLElement, report: ResearchBatchResult): void {
     metric("CANDLES", report.dataset.candleCount.toLocaleString()),
     metric("WALK-FORWARD CANDIDATES", String(report.candidateResults.length)),
     metric("TEST FOLDS / STRATEGY", String(report.candidateResults[0]?.evaluation.foldCount ?? 0)),
+    metric("DATASET FINGERPRINT", report.dataset.fingerprint),
   );
   target.append(summary);
 
