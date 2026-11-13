@@ -10,7 +10,7 @@ function createMemoryIndexedDb(): IDBFactory {
     },
     createObjectStore: (name: string) => {
       records.set(name, new Map());
-      return {};
+      return { createIndex: () => undefined };
     },
     transaction: (name: string) => {
       const store = records.get(name);
