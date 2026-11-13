@@ -245,3 +245,13 @@ Updated: 2026-11-14
 - Added original NEXUS agent skills: statistical-strategy-validation and portfolio-intent-architecture. Both are advisory methodology; neither can change risk rules or execute trades.
 - Added `docs/EXTERNAL_TRADING_RESEARCH.md` with the candidate matrix, adoption decisions, limitations and source links.
 - Added catalogue tests for quarantine defaults, licence retention and unverified test/docs/security state. Tests are committed but not executed; full CI and build remain unverified due runner allocation restrictions.
+
+
+## Mobile skill review console increment
+
+- Integrated the curated external trading catalogue into the dashboard with a mobile-responsive registry view showing repository, pinned revision, reported licence, maintenance date, stars, open issues and claimed capability areas.
+- Added local IndexedDB seeding that skips existing source IDs, preserving reviewed records. The console supports human approval only after the reviewer explicitly attests that they inspected the pinned revision's tests, documentation and security/dependency posture; reviewer identity and rationale are required.
+- Added explicit rejection records with reviewer identity, rationale and timestamp. Original discovery entries are retained; decisions create separate versioned records.
+- Added the missing FinRL-X catalogue candidate (Apache-2.0, pinned metadata snapshot) to reconcile the nine-project research inventory with the seed catalogue and existing catalogue test.
+- Approval and rejection remain metadata-only. Every record has `executable: false`; the app never clones, installs, imports or runs external repository code. A checkbox attestation is a human assertion, not independent verification by NEXUS.
+- Added rejection-governance tests. Existing catalogue test already checks FinRL-X inclusion. Tests, full Vitest suite, production build and Android browser interaction have not been executed in this environment. GitHub Actions runner allocation remains the verification blocker; no billing changes have been made.
