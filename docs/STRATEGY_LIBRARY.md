@@ -29,3 +29,11 @@ NEXUS includes three deterministic research baselines. They are starting points 
 All three functions return signals only. They do not submit orders or decide fills. The backtest engine applies next-candle-open execution, configured fees, adverse slippage and position sizing.
 
 Every baseline must be compared with cash and buy-and-hold, evaluated on chronological walk-forward folds, and tested with a final untouched holdout before strategy selection. Parameters must not be selected using the final test data. No baseline is automatically connected to paper execution.
+
+## Reproducible research batches
+
+The domain function runResearchBatch evaluates multiple candidate factories against the same chronological folds, market history, costs, slippage and position-sizing assumptions. Each factory is fitted independently on each fold's training data. The output includes the walk-forward evaluation, trade/fold scorecard and trend × volatility attribution for every candidate.
+
+Candidate IDs must be stable and changed when strategy logic or parameters change. The dataset record includes candle count, first/last timestamp and a 32-bit FNV-1a fingerprint. This fingerprint is a reproducibility aid, not a cryptographic integrity hash.
+
+The pipeline deliberately does not rank, tune, select, promote or execute candidates. Candidate comparison and selection remain an explicit research decision, with multiple-testing and final-holdout controls.
