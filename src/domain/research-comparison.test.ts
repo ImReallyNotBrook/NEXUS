@@ -4,7 +4,7 @@ import type { ResearchBatchResult } from "./research-pipeline";
 
 function report(fingerprint: string, returnPct: number): ResearchBatchResult {
   return {
-    dataset: { candleCount: 300, firstTimestamp: 1, lastTimestamp: 300, fingerprint },
+    dataset: { candleCount: 300, firstTimestamp: 1, lastTimestamp: 300, fingerprint, metadata: { symbol: "BTCUSDT", interval: "1h", provider: "Binance public spot" } },
     config: {
       folds: { trainBars: 100, testBars: 20, stepBars: 20, embargoBars: 2, expanding: true },
       backtest: { initialCapital: 10_000, feeRate: 0.001, slippageBps: 5, allocationFraction: 0.25 },
@@ -32,6 +32,9 @@ describe("compareResearchRuns", () => {
     const changed = report("same", 7);
     changed.config.backtest.feeRate = 0.002;
     expect(compareResearchRuns(report("same", 4), changed).comparable).toBe(false);
+    const otherMarket = report("same", 7);
+    otherMarket.dataset.metadata!.symbol = "ETHUSDT";
+    expect(compareResearchRuns(report("same", 4), otherMarket).reasons).toContain("Market symbol, interval or provider differs");
   });
 
   it("reports only candidates present in both experiments", () => {
