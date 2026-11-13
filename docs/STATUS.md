@@ -185,3 +185,13 @@ Updated: 2026-11-14
 - The pipeline does not rank, tune, select, promote or execute candidates.
 - Added 3 Vitest specifications for identical fold windows, candidate validation, input immutability and dataset fingerprint sensitivity.
 - Local strict TypeScript compilation passed for the research pipeline and all imported domain modules. Full Vitest and production build remain unverified because hosted Actions runners are not allocated.
+
+
+## Mobile research console increment
+
+- Added a dashboard console for symbol, interval, history length, training/test window, fee and slippage configuration. It fetches bounded completed public Binance spot candles and runs the three baseline candidates through the reproducible research pipeline.
+- Results display per-candidate out-of-sample returns, worst fold drawdown, trade count, win rate, profit factor, net expectancy, positive-fold share, fees, regime breakdowns and individual fold details.
+- Added a dataset fingerprint to help identify repeat experiments. It uses non-cryptographic FNV-1a and is not an authenticity or integrity security control.
+- Added validation tests for research-run settings and a maximum 40-fold workload cap to limit CPU/memory use on mobile devices. Historical requests are bounded to 5,000 candles; no API keys are required.
+- Console currently runs experiments in memory and does not persist reports. No curated dataset, live market fetch, browser runtime, full Vitest suite or production build has been verified in this environment.
+- GitHub Actions account billing warning remains unresolved; no payment method, paid runner or spending limit changes were made.
