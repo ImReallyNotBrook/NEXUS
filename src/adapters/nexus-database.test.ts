@@ -39,6 +39,7 @@ describe("NEXUS IndexedDB schema", () => {
     expect(database.objectStoreNames.contains("historicalCandles")).toBe(true);
     expect(database.objectStoreNames.contains("researchRuns")).toBe(true);
     expect(database.objectStoreNames.contains("strategyConfigLedger")).toBe(true);
+    expect(database.objectStoreNames.contains("researchHypotheses")).toBe(true);
     database.close();
   });
 
@@ -53,6 +54,7 @@ describe("NEXUS IndexedDB schema", () => {
     expect(second.objectStoreNames.contains("historicalCandles")).toBe(true);
     expect(second.objectStoreNames.contains("researchRuns")).toBe(true);
     expect(second.objectStoreNames.contains("strategyConfigLedger")).toBe(true);
+    expect(second.objectStoreNames.contains("researchHypotheses")).toBe(true);
     first.close();
     second.close();
   });
