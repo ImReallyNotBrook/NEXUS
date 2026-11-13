@@ -46,4 +46,19 @@ describe("buildWalkForwardFolds", () => {
     expect(Object.isFrozen(folds[0].train[0])).toBe(true);
     expect(Object.isFrozen(folds[0].test[0])).toBe(true);
   });
+
+  it("keeps every fold's training and embargo timestamps strictly before its test window", () => {
+    const folds = buildWalkForwardFolds(candles, {
+      trainBars: 7, testBars: 3, stepBars: 3, embargoBars: 2, expanding: true,
+    });
+    for (const fold of folds) {
+      const testStart = fold.test[0].timestamp;
+      expect(fold.train.every((bar) => bar.timestamp < testStart)).toBe(true);
+      expect(fold.embargo.every((bar) => bar.timestamp < testStart)).toBe(true);
+      expect(fold.train.at(-1)!.timestamp).toBeLessThan(fold.embargo[0].timestamp);
+      expect(fold.embargo.at(-1)!.timestamp).toBeLessThan(testStart);
+      expect(fold.test.every((bar) => bar.timestamp >= testStart)).toBe(true);
+    }
+  });
+
 });
