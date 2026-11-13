@@ -37,6 +37,7 @@ export function buildWalkForwardFolds(
   assertInteger(trainBars, "trainBars", 1);
   assertInteger(testBars, "testBars", 1);
   assertInteger(stepBars, "stepBars", 1);
+  if (stepBars < testBars) throw new RangeError("stepBars must be >= testBars to keep test windows disjoint");
   assertInteger(embargoBars, "embargoBars", 0);
   if (typeof expanding !== "boolean") throw new TypeError("expanding must be boolean");
 
