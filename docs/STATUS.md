@@ -20,7 +20,7 @@ Updated: 2026-11-14
 ## Verification
 - Local Node.js test harness: 5 qualification assertions passed.
 - Local Node.js test harness: 15 candle/indicator assertions passed.
-- Local Node.js test harness: 6 public market adapter assertions passed.
+- Local Node.js test harness: 8 public market adapter assertions passed.
 - Global TypeScript 5.8.3 strict compile of candle, indicator and adapter modules: passed.
 - Vitest specifications added for qualification, candle validation, indicators and Binance adapter; the full Vitest suite is still pending because GitHub Actions runners are failing before job steps execute.
 - GitHub Actions: runs are created but fail before any runner starts (runner name empty; zero steps executed). The CI suite and production build therefore remain unverified in GitHub Actions.
