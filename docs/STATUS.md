@@ -51,5 +51,5 @@ Updated: 2026-11-14
 - Added 9 paper broker and 2 IndexedDB adapter Vitest specifications. Separate local Node harnesses passed 9 paper broker scenarios and 4 persistence assertions; strict TypeScript compilation passed for the paper broker and IndexedDB adapter modules.
 - Full repository Vitest and Vite production build remain unverified because GitHub Actions jobs are failing before runner allocation (runner ID 0, empty runner name, no job steps). The latest workflow run must be checked again after this commit.
 - IndexedDB browser integration and the full mobile UI have not yet been exercised in a real browser.
-- Market orders use the latest completed candle close as a reference; spread, order-book depth, latency, partial fills, and market impact are not modelled.
+- Market orders use the latest completed candle close as a reference; the dashboard rejects orders when its fetched snapshot is older than five minutes. Spread, order-book depth, latency, partial fills, and market impact are not modelled.
 
