@@ -16,6 +16,17 @@ function memoryIndexedDb(): IDBFactory {
       if (!records) throw new Error("Missing object store");
       const transaction: Record<string, unknown> = {};
       transaction.objectStore = () => ({
+        add: (record: { id: string }) => {
+          if (records.has(record.id)) throw new Error("ConstraintError");
+          records.set(record.id, structuredClone(record));
+          const request: Record<string, unknown> = {};
+          queueMicrotask(() => {
+            request.result = record.id;
+            (request.onsuccess as (() => void) | undefined)?.();
+            (transaction.oncomplete as (() => void) | undefined)?.();
+          });
+          return request;
+        },
         put: (record: { id: string }) => {
           records.set(record.id, structuredClone(record));
           queueMicrotask(() => (transaction.oncomplete as (() => void) | undefined)?.());
