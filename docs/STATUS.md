@@ -119,9 +119,9 @@ Updated: 2026-11-14
 ## Walk-forward out-of-sample execution increment
 
 - Extended the backtest engine with warm-up bars that provide historical indicator context but cannot generate/fill trades and are excluded from OOS equity curves.
-- Added `runWalkForwardBacktest`: a fresh strategy factory receives only each fold's training candles; embargo and training bars are warm-up only; each disjoint test window is independently backtested with a reset initial capital.
-- Reports per-fold results, mean/median/worst/best fold return, maximum fold drawdown, total fees/trades and pooled win rate. Fold returns are not compounded or presented as a single portfolio return.
-- Added a warm-up isolation test and 2 walk-forward runner specifications. Local strict TypeScript compile passed for backtest and walk-forward modules; deterministic harness passed warm-up isolation and 3 independent OOS fold scenarios.
+- Extended the canonical `evaluateWalkForward` runner: a fresh strategy factory receives only each fold's training candles; embargo and training bars are warm-up only; each disjoint test window is independently backtested with a reset initial capital.
+- Reports per-fold results, mean and sequentially compounded fold returns, worst fold drawdown, total fees/trades and pooled win rate. The separate strategy scorecard reports median/best/worst fold return, dispersion and trade-level net PnL; no result is presented as a continuous pooled-account equity curve.
+- Added warm-up isolation coverage to the backtest and walk-forward evaluation specifications. Local strict TypeScript compile passed for backtest and walk-forward evaluation modules; deterministic harness passed warm-up isolation and 2 independent OOS folds.
 - This is an evaluation framework, not an optimizer. Strategy selection and parameter search, multiple-testing accounting, and an untouched final holdout remain future work; walk-forward alone does not eliminate overfitting or regime shift.
 - Full Vitest/build and hosted browser verification remain unverified because GitHub Actions still fails before runner allocation.
 
