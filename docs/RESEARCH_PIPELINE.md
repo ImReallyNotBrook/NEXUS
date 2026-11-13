@@ -73,3 +73,6 @@ Candidate configuration changes are represented as versioned proposals with expl
 ## Experiment comparison
 
 The history view permits selecting two saved experiments. Candidate deltas are calculated only for strategy IDs present in both reports. A comparison is labelled apples-to-apples only when dataset fingerprint, candle count, timestamp bounds and the complete walk-forward/execution configuration match. Otherwise the UI explicitly reports the mismatch and does not label the deltas comparable. Deltas are descriptive; they do not rank or promote candidates.
+
+
+Every dashboard-generated report now records symbol, interval and provider alongside candle count, timestamp bounds and the non-cryptographic content fingerprint. Comparison fails closed when either report lacks market provenance or the market identity differs.
