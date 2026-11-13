@@ -54,3 +54,8 @@ The values above are illustrative configuration only. They are not calibrated fo
 ## Status
 
 This module is a deterministic research orchestration layer. It is not yet exposed in the dashboard, and no historical experiment has been run against a curated, quality-audited dataset. Do not interpret the code or sample configuration as evidence of an edge.
+
+
+## Mobile dashboard console
+
+The dashboard includes a form to choose a market pair, interval, candle count, training/test window sizes, fee and slippage assumptions. It downloads bounded completed public Binance spot candles, runs the three fixed baseline candidates, and renders out-of-sample summary metrics, regime breakdowns and per-fold details. The UI caps history at 5,000 candles and estimated folds at 40 to limit work on mobile hardware. A dataset FNV-1a fingerprint is displayed for repeat-run identification; it is not cryptographic and does not authenticate data. The console currently does not persist experiment reports between sessions.
