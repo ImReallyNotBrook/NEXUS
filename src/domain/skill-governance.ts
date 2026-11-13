@@ -105,7 +105,7 @@ export function assessSkillProposal(proposal: SkillProposal): SkillAssessment {
 
   const changedFiles = Array.isArray(raw.changedFiles) ? raw.changedFiles : [];
   if (changedFiles.length === 0 || changedFiles.some((path) =>
-    !isNonBlankString(path) || path.startsWith("/") || path.includes("..") || path.includes("\\\\"),
+    !isNonBlankString(path) || path.startsWith("/") || path.includes("..") || path.includes("\\"),
   )) {
     reasons.push("Proposal must identify safe, repository-relative changed file paths");
   }
