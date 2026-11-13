@@ -31,6 +31,15 @@ describe("validateSnapshotQuality", () => {
     expect(result.issues.some((issue) => issue.code === "CANDLE_GAP")).toBe(true);
   });
 
+  it("fails candle timestamps that are not aligned to the requested interval", () => {
+    const misaligned = candles.map((candle) => ({ ...candle, timestamp: candle.timestamp + 1_000 }));
+    const result = validateSnapshotQuality(snapshot("Binance", misaligned), {
+      now: base + 10_900_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+    });
+    expect(result.status).toBe("fail");
+    expect(result.issues.some((issue) => issue.code === "MISALIGNED_CANDLE")).toBe(true);
+  });
+
   it("warns on zero-volume candles without treating them as invalid OHLC", () => {
     const rows = [candles[0], { ...candles[1], volume: 0 }, candles[2]];
     const result = validateSnapshotQuality(snapshot("Binance", rows), {
