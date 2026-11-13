@@ -182,7 +182,7 @@ async function loadMarketSnapshot(): Promise<void> {
   renderPaperAccount();
   try {
     const snapshot = await resolveMarketSnapshot(marketProviders, marketCache, {
-      symbol: "BTCUSDT", interval: "1h", limit: 25, maxCacheAgeMs: 24 * 60 * 60 * 1000,
+      symbol: "BTCUSDT", interval: "1h", limit: 25, minCandles: 15, maxCacheAgeMs: 24 * 60 * 60 * 1000,
     });
     const candles = snapshot.candles;
     if (candles.length < 15) throw new Error("Not enough completed candles to calculate RSI");
