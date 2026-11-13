@@ -42,6 +42,7 @@ export interface SnapshotComparison {
   primaryProvider: string;
   secondaryProvider: string;
   comparedCandles: number;
+  latestTimestampMatched: boolean;
   maxDeviationBps: number | null;
   deviations: Array<{ timestamp: number; deviationBps: number }>;
 }
@@ -183,7 +184,9 @@ export function compareMarketSnapshots(
   }
 
   const maximum = deviations.reduce((value, item) => Math.max(value, item.deviationBps), 0);
-  const status = deviations.length === 0
+  const latestTimestampMatched = primaryCandles.length > 0 && secondaryCandles.length > 0 &&
+    primaryCandles[primaryCandles.length - 1].timestamp === secondaryCandles[secondaryCandles.length - 1].timestamp;
+  const status = deviations.length === 0 || !latestTimestampMatched
     ? "insufficient_overlap"
     : maximum > maxDeviationBps ? "discrepancy" : "within_tolerance";
 
@@ -194,6 +197,7 @@ export function compareMarketSnapshots(
     primaryProvider: primary.provider,
     secondaryProvider: secondary.provider,
     comparedCandles: deviations.length,
+    latestTimestampMatched,
     maxDeviationBps: deviations.length === 0 ? null : maximum,
     deviations,
   };
