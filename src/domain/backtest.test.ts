@@ -170,4 +170,12 @@ describe("runBacktest", () => {
     expect(result.trades[0].exitPrice).toBe(115);
   });
 
+
+  it("rejects invalid protective settings even when no position is opened", () => {
+    expect(() => runBacktest(candles, () => "hold", {
+      initialCapital: 1000, feeRate: 0, slippageBps: 0, allocationFraction: 1,
+      protectiveOrders: { stopLossPct: 0 },
+    })).toThrow(/stopLossPct/i);
+  });
+
 });
