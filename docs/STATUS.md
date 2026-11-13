@@ -234,3 +234,14 @@ Updated: 2026-11-14
 - Hard boundary: even approved catalogue entries remain non-executable. No external source is downloaded, installed, imported or run. Automated GitHub discovery, isolated code testing, LLM skill authoring and UI controls remain future work.
 - Added domain specifications for quarantine defaults, licence/security eligibility, invalid metadata and human approval. The tests are committed but not run; GitHub Actions runner allocation remains unresolved and the dependency-installed full test/build pipeline is still unverified.
 - See `docs/SKILL_INTELLIGENCE.md` for trust boundaries and review checklist.
+
+
+## External trading research and curated skill catalogue
+
+- Queried GitHub repository metadata and default-branch commit history for nine trading systems/libraries: FinRL-X, Jesse, LEAN, Hummingbot, FinRL, Freqtrade, NautilusTrader, vectorbt and backtesting.py. Recorded observed licence, stars, open issues and latest commit date in `src/domain/skill-catalogue.ts`; snapshot date 2026-11-14.
+- Added nine source-pinned, metadata-only catalogue entries. All remain quarantined; tests, documentation verification and security review are deliberately unset until the exact revisions and dependency trees are inspected. No external source code was cloned, installed or executed.
+- Licence policy currently excludes GPL-3.0, LGPL-3.0 and AGPL-3.0 from code adoption; vectorbt remains quarantined because GitHub reports NOASSERTION. These remain research references only, not trusted dependencies.
+- FinRL-X (Apache-2.0) is the strongest architecture reference for composable selection/allocation/timing/risk overlays and target-weight contracts. Jesse (MIT) is the strongest crypto-research reference for rule significance testing, Monte Carlo analysis and research API workflows. LEAN (Apache-2.0) is a reference for modular event-driven system boundaries. No framework is imported wholesale.
+- Added original NEXUS agent skills: statistical-strategy-validation and portfolio-intent-architecture. Both are advisory methodology; neither can change risk rules or execute trades.
+- Added `docs/EXTERNAL_TRADING_RESEARCH.md` with the candidate matrix, adoption decisions, limitations and source links.
+- Added catalogue tests for quarantine defaults, licence retention and unverified test/docs/security state. Tests are committed but not executed; full CI and build remain unverified due runner allocation restrictions.
