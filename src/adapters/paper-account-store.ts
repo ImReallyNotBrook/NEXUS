@@ -61,10 +61,10 @@ export class PaperAccountStore {
     const database = await this.openDatabase();
     const transaction = database.transaction(ACCOUNT_STORE, "readonly");
     const done = transactionComplete(transaction);
-    const record = await requestResult(
+    const recordPromise = requestResult(
       transaction.objectStore(ACCOUNT_STORE).get(this.accountId) as IDBRequest<StoredPaperAccount | undefined>,
     );
-    await done;
+    const [record] = await Promise.all([recordPromise, done]);
     return record?.account ?? null;
   }
 
