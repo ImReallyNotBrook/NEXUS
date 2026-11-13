@@ -103,6 +103,17 @@ describe("compareMarketSnapshots", () => {
     expect(result.comparedCandles).toBe(0);
   });
 
+
+  it("requires the latest candle timestamp to overlap, not merely older candles", () => {
+    const result = compareMarketSnapshots(
+      snapshot("Binance", candles),
+      snapshot("Kraken", candles.slice(0, 2)),
+      20,
+    );
+    expect(result.status).toBe("insufficient_overlap");
+    expect(result.latestTimestampMatched).toBe(false);
+  });
+
   it("rejects invalid thresholds", () => {
     expect(() => compareMarketSnapshots(snapshot("A", candles), snapshot("B", candles), -1)).toThrow();
   });
