@@ -9,6 +9,18 @@ const DISCOVERED_AT = Date.parse("2026-11-14T00:00:00.000Z");
 export function getSeedSkillCandidates(): SkillRecord[] {
   const sources = [
     {
+      id: "finrl-x",
+      name: "FinRL-X",
+      description: "AI-native quantitative trading architecture separating data, strategy, backtesting and execution with portfolio selection, allocation, timing and risk overlays.",
+      repositoryUrl: "https://github.com/AI4Finance-Foundation/FinRL-Trading",
+      version: "4409abe",
+      license: "Apache-2.0",
+      lastCommitAt: Date.parse("2026-09-18T01:13:20Z"),
+      stars: 3939,
+      openIssues: 53,
+      capabilities: ["modular-quant-architecture", "portfolio-selection", "portfolio-allocation", "risk-overlays"],
+    },
+    {
       id: "freqtrade-freqtrade",
       name: "Freqtrade",
       description: "Crypto trading framework with strategy backtesting, hyperparameter optimisation and FreqAI adaptive modelling.",
