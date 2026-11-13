@@ -22,6 +22,20 @@ describe("runBacktest", () => {
     expect(result.completedTrades).toBe(0);
   });
 
+  it("uses warm-up history without allowing pre-test signals or equity into the test result", () => {
+    const series: Candle[] = [
+      ...candles,
+      { timestamp: 5, open: 120, high: 131, low: 119, close: 125, volume: 10 },
+    ];
+    const result = runBacktest(series, (history) =>
+      history.length === 3 ? "buy" : history.length === 4 ? "sell" : "hold",
+    { initialCapital: 1000, feeRate: 0, slippageBps: 0, allocationFraction: 0.5, warmupBars: 2 });
+    expect(result.equityCurve.map((point) => point.timestamp)).toEqual([3, 4, 5]);
+    expect(result.completedTrades).toBe(1);
+    expect(result.trades[0].entryTimestamp).toBe(4);
+    expect(result.trades[0].exitTimestamp).toBe(5);
+  });
+
   it("applies fees and adverse slippage to both entry and exit", () => {
     const result = runBacktest(candles.slice(0, 3), (history) =>
       history.length === 1 ? "buy" : history.length === 2 ? "sell" : "hold",
