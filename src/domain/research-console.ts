@@ -2,6 +2,7 @@ import { fetchBinanceHistory, type BinanceInterval } from "../adapters/binance-p
 import type { Candle } from "./candles";
 import { runResearchBatch, type ResearchBatchResult, type ResearchPipelineConfig } from "./research-pipeline";
 import { createBaselineResearchCandidates } from "../strategies/baseline-research-candidates";
+import { ResearchRunStore, type StoredResearchRun } from "../adapters/research-run-store";
 
 const INTERVAL_MS: Partial<Record<BinanceInterval, number>> = {
   "1m": 60_000, "3m": 180_000, "5m": 300_000, "15m": 900_000,
@@ -171,6 +172,7 @@ export function mountResearchConsole(container: HTMLElement): void {
       </form>
       <p id="research-status" class="paper-status" role="status">Ready · public Binance spot data · no API key required</p>
       <div id="research-results" aria-live="polite"></div>
+      <section class="saved-research"><h3>Saved experiment history</h3><p class="small">Stored only on this device. Clearing browser site data can erase these records.</p><div id="research-history" aria-live="polite">Loading saved experiments…</div></section>
       <p class="small">Baseline parameters and regime thresholds are fixed research defaults, not optimized recommendations. Results are historical simulations, not evidence of future profitability.</p>
     </section>
   `;
@@ -179,7 +181,47 @@ export function mountResearchConsole(container: HTMLElement): void {
   const button = container.querySelector<HTMLButtonElement>("#run-research");
   const status = container.querySelector<HTMLElement>("#research-status");
   const results = container.querySelector<HTMLElement>("#research-results");
-  if (!form || !button || !status || !results) return;
+  const history = container.querySelector<HTMLElement>("#research-history");
+  if (!form || !button || !status || !results || !history) return;
+  const runStore = new ResearchRunStore();
+
+  const refreshHistory = async (): Promise<void> => {
+    try {
+      const records = await runStore.list(50);
+      history.replaceChildren();
+      if (records.length === 0) {
+        history.append(el("p", "small", "No saved experiments yet."));
+        return;
+      }
+      for (const record of records) {
+        const item = el("div", "saved-run");
+        const info = el("div", "saved-run-info");
+        info.append(
+          el("strong", "", record.report.config ? record.report.candidateResults.length + " strategies · " + record.report.dataset.candleCount.toLocaleString() + " candles" : "Saved experiment"),
+          el("span", "small", new Date(record.createdAt).toLocaleString() + " · " + record.report.dataset.fingerprint),
+        );
+        const actions = el("div", "saved-run-actions");
+        const open = el("button", "saved-run-open", "Open");
+        open.type = "button";
+        open.addEventListener("click", () => renderReport(results, record.report));
+        const remove = el("button", "saved-run-delete", "Delete");
+        remove.type = "button";
+        remove.addEventListener("click", () => {
+          remove.disabled = true;
+          void runStore.delete(record.id).then(refreshHistory).catch((error: unknown) => {
+            status.textContent = error instanceof Error ? error.message : "Could not delete saved experiment";
+            remove.disabled = false;
+          });
+        });
+        actions.append(open, remove);
+        item.append(info, actions);
+        history.append(item);
+      }
+    } catch (error) {
+      history.textContent = error instanceof Error ? error.message : "Saved experiment history unavailable";
+    }
+  };
+  void refreshHistory();
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -229,7 +271,9 @@ export function mountResearchConsole(container: HTMLElement): void {
         });
         const report = runResearchBatch(candles, candidates, settings.pipeline);
         renderReport(results, report);
-        status.textContent = `Completed · ${candles.length.toLocaleString()} candles · ${report.candidateResults[0].evaluation.foldCount} out-of-sample folds per strategy · ${settings.symbol} ${settings.interval}`;
+        const saved = await runStore.save(report);
+        await refreshHistory();
+        status.textContent = `Completed and saved · ${candles.length.toLocaleString()} candles · ${report.candidateResults[0].evaluation.foldCount} out-of-sample folds per strategy · ${settings.symbol} ${settings.interval} · ${saved.id}`;
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : "Research batch failed";
       } finally {
