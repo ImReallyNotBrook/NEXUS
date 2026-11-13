@@ -57,14 +57,15 @@ async function loadMarketSnapshot(): Promise<void> {
     const candles = await fetchBinanceCandles({ symbol: "BTCUSDT", interval: "1h", limit: 25 });
     if (candles.length < 15) throw new Error("Not enough completed candles to calculate RSI");
     const firstClose = candles[0].close;
+    if (firstClose <= 0) throw new Error("Invalid reference price in market data");
     const last = candles[candles.length - 1];
     const change = ((last.close - firstClose) / firstClose) * 100;
     const rsiValues = rsi(candles.map((candle) => candle.close), 14);
     const latestRsi = rsiValues[rsiValues.length - 1];
 
     priceElement.textContent = new Intl.NumberFormat("en-US", {
-      style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2,
-    }).format(last.close);
+      minimumFractionDigits: 2, maximumFractionDigits: 2,
+    }).format(last.close) + " USDT";
     changeElement.textContent = (change >= 0 ? "+" : "") + change.toFixed(2) + "% over 24 hourly intervals";
     changeElement.dataset.direction = change >= 0 ? "up" : "down";
     rsiElement.textContent = latestRsi === null ? "—" : latestRsi.toFixed(1);
