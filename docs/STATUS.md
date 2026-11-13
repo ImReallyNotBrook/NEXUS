@@ -279,4 +279,9 @@ Updated: 2026-11-14
 - Added focused resolver and backtest integration specifications for intrabar triggers, stop gaps, target gaps, both-level ambiguity, fee/slippage treatment and entry-candle exclusion.
 - Added `docs/PROTECTIVE_ORDER_MODEL.md` describing assumptions and execution-model limitations.
 - These tests have been committed but not executed. Full Vitest, production build, hosted CI and deployment remain unverified. No billing changes or live execution capability were introduced.
+## Protective-order verification update
 
+- Local strict TypeScript compilation passed for the candle, protective-order and backtest domain modules.
+- A standalone deterministic Node harness passed 9 assertions covering stop/target trigger resolution, stop and target gaps, adverse intrabar ambiguity, fee/slippage accounting, entry-candle exclusion and invalid configuration rejection.
+- The first harness pass exposed a floating-point equality issue in the 10% target calculation; the level calculation was corrected and the harness then passed. The integration test's expected stop fill was also corrected to include both entry and exit slippage.
+- This is not a Vitest or full-project build result. GitHub Actions runs 43517203022 (CI) and 43517203000 (Pages) failed before runner allocation: runner ID 0, empty runner name, zero steps. Cause remains unknown; no billing changes were made.
