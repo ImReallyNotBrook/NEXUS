@@ -8,7 +8,7 @@ function assertFinite(values: readonly number[], label = "values"): void {
   if (!values.every(Number.isFinite)) throw new TypeError(label + " must contain only finite numbers");
 }
 
-function assertSameLength(...series: readonly number[][]): void {
+function assertSameLength(...series: readonly (readonly number[])[]): void {
   if (series.length === 0 || !series.every((values) => values.length === series[0].length)) {
     throw new RangeError("OHLC series must have the same length");
   }
@@ -83,7 +83,7 @@ export function atr(
   period = 14,
 ): NullableSeries {
   assertPeriod(period);
-  assertSameLength(high as number[], low as number[], close as number[]);
+  assertSameLength(high, low, close);
   assertFinite(high, "high");
   assertFinite(low, "low");
   assertFinite(close, "close");
