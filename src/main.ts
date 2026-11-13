@@ -100,8 +100,8 @@ function renderPaperAccount(): void {
       : "No paper fills yet";
   }
   const canTrade = latestBtcPrice !== null;
-  if (paperBuyButton) paperBuyButton.disabled = !canTrade;
-  if (paperSellButton) paperSellButton.disabled = !canTrade || !paperAccount.positions.BTCUSDT;
+  if (paperBuyButton) paperBuyButton.disabled = !canTrade || paperOrderInFlight;
+  if (paperSellButton) paperSellButton.disabled = !canTrade || paperOrderInFlight || !paperAccount.positions.BTCUSDT;
 }
 
 async function initializePaperAccount(): Promise<void> {
