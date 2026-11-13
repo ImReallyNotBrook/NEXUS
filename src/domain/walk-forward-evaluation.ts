@@ -6,7 +6,7 @@ export type StrategyFactory = (training: readonly Candle[]) => StrategyEvaluator
 
 export interface WalkForwardEvaluationConfig {
   folds: WalkForwardConfig;
-  backtest: BacktestConfig;
+  backtest: Omit<BacktestConfig, "warmupBars">;
   /** Fit parameters using training candles only; return a frozen test-time evaluator. */
   fit: StrategyFactory;
 }
@@ -50,7 +50,11 @@ export function evaluateWalkForward(
     if (typeof evaluator !== "function") {
       throw new TypeError("Strategy factory must return a strategy evaluator");
     }
-    const result = runBacktest(fold.test, evaluator, config.backtest);
+    const testSeries = [...fold.train, ...fold.embargo, ...fold.test];
+    const result = runBacktest(testSeries, evaluator, {
+      ...config.backtest,
+      warmupBars: fold.train.length + fold.embargo.length,
+    });
     results.push({
       index: fold.index,
       trainStartTimestamp: fold.train[0].timestamp,
