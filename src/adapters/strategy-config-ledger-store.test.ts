@@ -81,6 +81,10 @@ describe("StrategyConfigLedgerStore", () => {
     const store = new StrategyConfigLedgerStore(memoryIndexedDb());
     await expect(store.saveProposal({ ...proposal, evidence: [] })).rejects.toThrow();
     await expect(store.approveProposal(proposal, {
+      approvedBy: "owner", rationale: "Not yet persisted.", approvedAt: 1001,
+    })).rejects.toThrow(/saved pending proposal/i);
+    await store.saveProposal(proposal);
+    await expect(store.approveProposal(proposal, {
       approvedBy: "", rationale: "", approvedAt: 1001,
     })).rejects.toThrow(/human approval/i);
   });
