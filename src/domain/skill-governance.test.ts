@@ -47,6 +47,18 @@ describe("assessSkillProposal", () => {
     }
   });
 
+  it("rejects malformed and path-traversing change manifests without throwing", () => {
+    expect(assessSkillProposal(proposal({
+      changedFiles: [null as unknown as string],
+    })).valid).toBe(false);
+    expect(assessSkillProposal(proposal({
+      changedFiles: ["skills/knowledge/../AGENTS.md"],
+    })).valid).toBe(false);
+    expect(assessSkillProposal(proposal({
+      evidence: [{ source: null as unknown as string, note: "bad reference" }],
+    })).valid).toBe(false);
+  });
+
   it("blocks proposals with failed tests, regressions, missing evidence or no score improvement", () => {
     expect(assessSkillProposal(proposal({
       evaluation: { testsPassed: false, baselineScore: 82, candidateScore: 84, regressionCount: 0 },
