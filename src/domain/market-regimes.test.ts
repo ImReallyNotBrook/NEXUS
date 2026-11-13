@@ -73,6 +73,11 @@ describe("classifyMarketRegimes", () => {
     expect(regimes.at(-1)?.trend).toBe("uptrend");
     expect(regimes.at(-1)?.volatility).toBe("normal");
     expect(regimes.at(-1)?.atrPct).toBeGreaterThan(0);
+    const prefix = classifyMarketRegimes(candles.slice(0, 6), {
+      fastEmaPeriod: 2, slowEmaPeriod: 3, atrPeriod: 2,
+      trendThresholdPct: 0.1, lowVolatilityAtrPct: 0.5, highVolatilityAtrPct: 3,
+    });
+    expect(regimes.slice(0, 6)).toEqual(prefix);
   });
 
   it("labels flat prices as range and validates threshold ordering", () => {
@@ -113,7 +118,9 @@ describe("buildRegimeScorecard", () => {
       { exitTimestamp: 10 * 60_000, pnl: -5 },
     ]);
     const report = buildRegimeScorecard(candles, evaluation, config);
-    const uptrend = report.find((item) => item.trend === "uptrend" && item.volatility === "normal");
+    expect(report.classifiedTrades).toBe(2);
+    expect(report.unclassifiedTrades).toBe(0);
+    const uptrend = report.groups.find((item) => item.trend === "uptrend" && item.volatility === "normal");
     expect(uptrend).toMatchObject({
       completedTrades: 2,
       winningTrades: 1,
