@@ -23,7 +23,7 @@ describe("createResearchRunSettings", () => {
     });
   });
 
-  it("rejects invalid pairs, unsupported intervals and impossible fold sizes", () => {
+  it("rejects invalid pairs, unsupported intervals, impossible windows and excessive fold counts", () => {
     expect(() => createResearchRunSettings({
       symbol: "BTC/USDT", interval: "1h", candleCount: 1500, trainBars: 600,
       testBars: 120, feeBps: 10, slippageBps: 5,
@@ -35,6 +35,10 @@ describe("createResearchRunSettings", () => {
     expect(() => createResearchRunSettings({
       symbol: "BTCUSDT", interval: "1h", candleCount: 500, trainBars: 400,
       testBars: 120, feeBps: 10, slippageBps: 5,
+    })).toThrow();
+    expect(() => createResearchRunSettings({
+      symbol: "BTCUSDT", interval: "1h", candleCount: 5000, trainBars: 100,
+      testBars: 20, feeBps: 10, slippageBps: 5,
     })).toThrow();
   });
 });
