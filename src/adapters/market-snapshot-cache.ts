@@ -1,8 +1,7 @@
 import type { MarketSnapshot, MarketSnapshotCache } from "../domain/market-data";
+import { MARKET_SNAPSHOT_STORE, openNexusDatabase } from "./nexus-database";
 
-const DATABASE_NAME = "nexus-local";
-const DATABASE_VERSION = 2;
-const SNAPSHOT_STORE = "marketSnapshots";
+const SNAPSHOT_STORE = MARKET_SNAPSHOT_STORE;
 
 interface StoredSnapshot {
   key: string;
@@ -31,26 +30,9 @@ export class IndexedDbMarketSnapshotCache implements MarketSnapshotCache {
 
   private openDatabase(): Promise<IDBDatabase> {
     if (this.databasePromise) return this.databasePromise;
-    this.databasePromise = new Promise((resolve, reject) => {
-      const request = this.factory.open(DATABASE_NAME, DATABASE_VERSION);
-      request.onupgradeneeded = () => {
-        const database = request.result;
-        if (!database.objectStoreNames.contains("paperAccounts")) {
-          database.createObjectStore("paperAccounts", { keyPath: "id" });
-        }
-        if (!database.objectStoreNames.contains(SNAPSHOT_STORE)) {
-          database.createObjectStore(SNAPSHOT_STORE, { keyPath: "key" });
-        }
-      };
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => {
-        this.databasePromise = null;
-        reject(request.error ?? new Error("Could not open NEXUS market cache"));
-      };
-      request.onblocked = () => {
-        this.databasePromise = null;
-        reject(new Error("NEXUS database upgrade is blocked by another open tab"));
-      };
+    this.databasePromise = openNexusDatabase(this.factory).catch((error: unknown) => {
+      this.databasePromise = null;
+      throw error;
     });
     return this.databasePromise;
   }
