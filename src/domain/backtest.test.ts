@@ -100,4 +100,74 @@ describe("runBacktest", () => {
     expect(result.completedTrades).toBe(0);
   });
 
+
+  it("activates protective orders only after the entry candle", () => {
+    const series: Candle[] = [
+      { timestamp: 1, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 2, open: 100, high: 120, low: 80, close: 100, volume: 1 },
+    ];
+    const result = runBacktest(series, (history) => history.length === 1 ? "buy" : "hold", {
+      initialCapital: 1000, feeRate: 0, slippageBps: 0, allocationFraction: 1,
+      protectiveOrders: { stopLossPct: 5, takeProfitPct: 10 },
+    });
+    expect(result.openPosition?.entryTimestamp).toBe(2);
+    expect(result.completedTrades).toBe(0);
+  });
+
+  it("executes an intrabar stop at its level with adverse slippage and fees", () => {
+    const series: Candle[] = [
+      { timestamp: 1, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 2, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 3, open: 100, high: 102, low: 94, close: 96, volume: 1 },
+    ];
+    const result = runBacktest(series, (history) => history.length === 1 ? "buy" : "hold", {
+      initialCapital: 1000, feeRate: 0.001, slippageBps: 10, allocationFraction: 1,
+      protectiveOrders: { stopLossPct: 5 },
+    });
+    expect(result.trades[0].exitReason).toBe("stop-loss");
+    expect(result.trades[0].exitPrice).toBeCloseTo(94.905);
+    expect(result.trades[0].exitFee).toBeGreaterThan(0);
+  });
+
+  it("fills a stop gap at the opening price before adverse slippage", () => {
+    const series: Candle[] = [
+      { timestamp: 1, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 2, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 3, open: 90, high: 92, low: 88, close: 91, volume: 1 },
+    ];
+    const result = runBacktest(series, (history) => history.length === 1 ? "buy" : "hold", {
+      initialCapital: 1000, feeRate: 0, slippageBps: 10, allocationFraction: 1,
+      protectiveOrders: { stopLossPct: 5 },
+    });
+    expect(result.trades[0].exitPrice).toBeCloseTo(89.91);
+  });
+
+  it("chooses the stop when stop and target are both touched intrabar", () => {
+    const series: Candle[] = [
+      { timestamp: 1, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 2, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 3, open: 100, high: 112, low: 94, close: 105, volume: 1 },
+    ];
+    const result = runBacktest(series, (history) => history.length === 1 ? "buy" : "hold", {
+      initialCapital: 1000, feeRate: 0, slippageBps: 0, allocationFraction: 1,
+      protectiveOrders: { stopLossPct: 5, takeProfitPct: 10 },
+    });
+    expect(result.trades[0].exitReason).toBe("stop-loss");
+    expect(result.trades[0].exitPrice).toBe(95);
+  });
+
+  it("fills a take-profit gap at the opening price without adverse market slippage", () => {
+    const series: Candle[] = [
+      { timestamp: 1, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 2, open: 100, high: 101, low: 99, close: 100, volume: 1 },
+      { timestamp: 3, open: 115, high: 117, low: 111, close: 114, volume: 1 },
+    ];
+    const result = runBacktest(series, (history) => history.length === 1 ? "buy" : "hold", {
+      initialCapital: 1000, feeRate: 0, slippageBps: 50, allocationFraction: 1,
+      protectiveOrders: { takeProfitPct: 10 },
+    });
+    expect(result.trades[0].exitReason).toBe("take-profit");
+    expect(result.trades[0].exitPrice).toBe(115);
+  });
+
 });
