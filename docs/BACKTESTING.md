@@ -18,8 +18,8 @@
 
 ## Walk-forward out-of-sample evaluation
 
-- `runWalkForwardBacktest` creates expanding or rolling chronological folds with non-overlapping test windows and an optional embargo.
-- A strategy factory receives only the fold's training candles. It returns a fresh evaluator for that fold; training and embargo bars are supplied as indicator warm-up context but are excluded from fills, equity curves and reported returns.
+- `evaluateWalkForward` creates expanding or rolling chronological folds with non-overlapping test windows and an optional embargo.
+- A strategy factory receives only the fold's training candles. It returns a fresh evaluator for that fold; the engine then supplies training and embargo bars as indicator warm-up context, but excludes them from fills, equity curves and reported returns.
 - Warm-up bars are not traded. The first test-window close may generate a signal, which can fill no earlier than the next test candle open.
 - Each fold resets to the configured initial capital. Results include each fold plus mean, median, worst and best fold return, total trades/fees, pooled win rate and worst fold drawdown. Fold returns are descriptive statistics and are not compounded into a synthetic portfolio.
 
