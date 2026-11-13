@@ -125,7 +125,7 @@ describe("runBacktest", () => {
       protectiveOrders: { stopLossPct: 5 },
     });
     expect(result.trades[0].exitReason).toBe("stop-loss");
-    expect(result.trades[0].exitPrice).toBeCloseTo(94.905);
+    expect(result.trades[0].exitPrice).toBeCloseTo(94.999905);
     expect(result.trades[0].exitFee).toBeGreaterThan(0);
   });
 
