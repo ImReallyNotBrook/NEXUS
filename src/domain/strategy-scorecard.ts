@@ -76,7 +76,7 @@ export function buildStrategyScorecard(evaluation: WalkForwardEvaluationResult):
   return {
     foldCount: returns.length,
     positiveFoldCount,
-    positiveFoldPct: returns.length ? positiveFoldCount / returns.length * 100 : null,
+    positiveFoldPct: returns.length ? (positiveFoldCount * 100) / returns.length : null,
     meanFoldReturnPct,
     medianFoldReturnPct: median(returns),
     worstFoldReturnPct: returns.length ? Math.min(...returns) : null,
