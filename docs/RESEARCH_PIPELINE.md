@@ -68,3 +68,8 @@ Completed reports are saved to the shared versioned IndexedDB database. The hist
 ## Strategy configuration governance
 
 Candidate configuration changes are represented as versioned proposals with explicit parameters, a named evaluation metric, baseline/candidate scores, test status, regression count and source-backed evidence. A proposal cannot be approved unless the candidate score improves the named metric, all tests pass and regression count is zero. Approval requires an identified human, a rationale and timestamp. Approved versions are immutable ledger entries; this stage does not automatically apply them to baseline code, paper trading or live execution. There is no connected LLM making autonomous proposals yet; the governance API is the controlled interface for future AI-generated recommendations.
+
+
+## Experiment comparison
+
+The history view permits selecting two saved experiments. Candidate deltas are calculated only for strategy IDs present in both reports. A comparison is labelled apples-to-apples only when dataset fingerprint, candle count, timestamp bounds and the complete walk-forward/execution configuration match. Otherwise the UI explicitly reports the mismatch and does not label the deltas comparable. Deltas are descriptive; they do not rank or promote candidates.
