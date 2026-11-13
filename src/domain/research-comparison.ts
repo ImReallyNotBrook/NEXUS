@@ -28,6 +28,9 @@ export function compareResearchRuns(
       baseline.dataset.lastTimestamp !== candidate.dataset.lastTimestamp) {
     reasons.push("Market dataset differs");
   }
+  if (JSON.stringify(baseline.dataset.metadata ?? null) !== JSON.stringify(candidate.dataset.metadata ?? null)) {
+    reasons.push("Market symbol, interval or provider differs");
+  }
   if (JSON.stringify(baseline.config) !== JSON.stringify(candidate.config)) {
     reasons.push("Walk-forward or execution assumptions differ");
   }
