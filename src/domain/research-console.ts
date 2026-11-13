@@ -222,6 +222,8 @@ export function mountResearchConsole(container: HTMLElement): void {
       cachedRuns = records;
       history.replaceChildren();
       if (records.length === 0) {
+        selectedRunIds.clear();
+        updateCompareButton();
         history.append(el("p", "small", "No saved experiments yet."));
         return;
       }
@@ -255,6 +257,7 @@ export function mountResearchConsole(container: HTMLElement): void {
         remove.type = "button";
         remove.addEventListener("click", () => {
           remove.disabled = true;
+          selectedRunIds.delete(record.id);
           void runStore.delete(record.id).then(refreshHistory).catch((error: unknown) => {
             status.textContent = error instanceof Error ? error.message : "Could not delete saved experiment";
             remove.disabled = false;
