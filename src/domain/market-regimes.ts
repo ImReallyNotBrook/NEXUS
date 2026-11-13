@@ -46,11 +46,15 @@ export interface RegimePerformance {
 }
 
 function positiveInteger(value: number, label: string): void {
-  if (!Number.isSafeInteger(value) || value < 1) throw new RangeError(label + " must be a positive integer");
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new RangeError(label + " must be a positive integer");
+  }
 }
 
 function finiteNonNegative(value: number, label: string): void {
-  if (!Number.isFinite(value) || value < 0) throw new RangeError(label + " must be finite and non-negative");
+  if (!Number.isFinite(value) || value < 0) {
+    throw new RangeError(label + " must be finite and non-negative");
+  }
 }
 
 /**
@@ -113,7 +117,6 @@ export function classifyMarketRegimes(
 
     return { timestamp: candle.timestamp, trend, volatility, emaSpreadPct, atrPct };
   });
-  return { groups, classifiedTrades, unclassifiedTrades };
 }
 
 /**
@@ -131,11 +134,15 @@ export function buildRegimeScorecard(
   const indexByTimestamp = new Map(regimes.map((regime, index) => [regime.timestamp, index]));
   const trendLabels = ["uptrend", "downtrend", "range"] as const;
   const volatilityLabels = ["low", "normal", "high"] as const;
-  const buckets = new Map<string, { trend: typeof trendLabels[number]; volatility: typeof volatilityLabels[number]; pnls: number[] }>();
+  const buckets = new Map<string, {
+    trend: typeof trendLabels[number];
+    volatility: typeof volatilityLabels[number];
+    pnls: number[];
+  }>();
 
   for (const trend of trendLabels) {
     for (const volatility of volatilityLabels) {
-      buckets.set(`${trend}:${volatility}`, { trend, volatility, pnls: [] });
+      buckets.set(trend + ":" + volatility, { trend, volatility, pnls: [] });
     }
   }
 
@@ -143,20 +150,29 @@ export function buildRegimeScorecard(
   let unclassifiedTrades = 0;
   for (const fold of evaluation.folds) {
     for (const trade of fold.result.trades) {
-      if (!Number.isFinite(trade.pnl)) throw new TypeError("Trade PnL must be finite");
+      if (!Number.isSafeInteger(trade.entryTimestamp) ||
+          !Number.isSafeInteger(trade.exitTimestamp) ||
+          trade.exitTimestamp < trade.entryTimestamp ||
+          !Number.isFinite(trade.pnl)) {
+        throw new RangeError("Trade ledger contains invalid timestamps or PnL");
+      }
       const exitIndex = indexByTimestamp.get(trade.exitTimestamp);
-      if (exitIndex === undefined) throw new RangeError("Trade exit timestamp is missing from supplied candles");
+      if (exitIndex === undefined) {
+        throw new RangeError("Trade exit timestamp is missing from supplied candles");
+      }
       const decisionRegime = exitIndex > 0 ? regimes[exitIndex - 1] : undefined;
-      if (!decisionRegime || decisionRegime.trend === "unknown" || decisionRegime.volatility === "unknown") {
+      if (!decisionRegime || decisionRegime.trend === "unknown" ||
+          decisionRegime.volatility === "unknown") {
         unclassifiedTrades += 1;
         continue;
       }
-      buckets.get(`${decisionRegime.trend}:${decisionRegime.volatility}`)!.pnls.push(trade.pnl);
+      buckets.get(decisionRegime.trend + ":" + decisionRegime.volatility)!.pnls.push(trade.pnl);
       classifiedTrades += 1;
     }
   }
 
   const groups = [...buckets.values()].filter((bucket) => bucket.pnls.length > 0).map((bucket) => {
+    const completedTrades = bucket.pnls.length;
     const winningTrades = bucket.pnls.filter((pnl) => pnl > 0).length;
     const losingTrades = bucket.pnls.filter((pnl) => pnl < 0).length;
     const grossProfit = bucket.pnls.reduce((sum, pnl) => sum + Math.max(0, pnl), 0);
@@ -165,15 +181,17 @@ export function buildRegimeScorecard(
     return {
       trend: bucket.trend,
       volatility: bucket.volatility,
-      completedTrades: bucket.pnls.length,
+      completedTrades,
       winningTrades,
       losingTrades,
-      winRatePct: (winningTrades / bucket.pnls.length) * 100,
+      winRatePct: winningTrades / completedTrades * 100,
       netPnl,
       grossProfit,
       grossLoss,
       profitFactor: grossLoss > 0 ? grossProfit / grossLoss : null,
-      expectancyPerTrade: netPnl / bucket.pnls.length,
+      expectancyPerTrade: netPnl / completedTrades,
     };
   });
+
+  return { groups, classifiedTrades, unclassifiedTrades };
 }
