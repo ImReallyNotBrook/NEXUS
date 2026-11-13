@@ -320,7 +320,9 @@ export function mountResearchConsole(container: HTMLElement): void {
           rsi: { period: 14, oversold: 30, overbought: 70 },
           donchian: { period: 20 },
         });
-        const report = runResearchBatch(candles, candidates, settings.pipeline);
+        const report = runResearchBatch(candles, candidates, settings.pipeline, {
+          symbol: settings.symbol, interval: settings.interval, provider: "Binance public spot",
+        });
         renderReport(results, report);
         const saved = await runStore.save(report);
         await refreshHistory();
