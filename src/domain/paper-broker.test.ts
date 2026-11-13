@@ -10,7 +10,7 @@ describe("paper broker", () => {
   });
 
   it("applies adverse slippage and fees to a buy fill", () => {
-    const account = createPaperAccount({ feeRate: 0.001, slippageRate: 0.002 });
+    const account = createPaperAccount({ feeRate: 0.001, slippageRate: 0.002, maxPositionValueFraction: 0.9 });
     const result = executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.1, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1, 12),
@@ -30,7 +30,7 @@ describe("paper broker", () => {
   });
 
   it("rejects overspending including fees and slippage", () => {
-    const account = createPaperAccount({ feeRate: 0.01, slippageRate: 0.01 });
+    const account = createPaperAccount({ feeRate: 0.01, slippageRate: 0.01, maxPositionValueFraction: 1 });
     expect(() => executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.2, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
@@ -57,7 +57,7 @@ describe("paper broker", () => {
     });
     expect(sold.positions.BTCUSDT).toBeUndefined();
     expect(sold.fills).toHaveLength(2);
-    expect(sold.realizedPnl).toBeCloseTo(79.9);
+    expect(sold.realizedPnl).toBeCloseTo(89.9);
   });
 
   it("blocks new orders after the configured daily drawdown limit", () => {
