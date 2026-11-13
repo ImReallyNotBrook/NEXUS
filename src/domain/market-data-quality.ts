@@ -9,7 +9,9 @@ export type QualityIssueCode =
   | "ZERO_VOLUME"
   | "STALE_SNAPSHOT"
   | "FUTURE_SNAPSHOT"
-  | "INVALID_FETCH_TIME";
+  | "INVALID_FETCH_TIME"
+  | "INCOMPLETE_LAST_CANDLE"
+  | "LAST_CANDLE_STALE";
 
 export interface QualityIssue {
   code: QualityIssueCode;
@@ -95,6 +97,28 @@ export function validateSnapshotQuality(
         message: "Expected " + options.intervalMs + "ms between candles but observed " +
           (current.timestamp - previous.timestamp) + "ms",
         candleTimestamp: current.timestamp,
+      });
+    }
+  }
+
+  if (validated.length > 0) {
+    const last = validated[validated.length - 1];
+    const lastCloseTime = last.timestamp + options.intervalMs;
+    if (!Number.isSafeInteger(lastCloseTime)) {
+      issues.push({ code: "INVALID_CANDLES", severity: "error", message: "Latest candle close timestamp exceeds safe integer range" });
+    } else if (lastCloseTime > options.now) {
+      issues.push({
+        code: "INCOMPLETE_LAST_CANDLE",
+        severity: "error",
+        message: "Latest candle interval has not closed yet",
+        candleTimestamp: last.timestamp,
+      });
+    } else if (options.now - lastCloseTime > options.maxAgeMs) {
+      issues.push({
+        code: "LAST_CANDLE_STALE",
+        severity: "error",
+        message: "Latest completed candle is older than the permitted age",
+        candleTimestamp: last.timestamp,
       });
     }
   }
