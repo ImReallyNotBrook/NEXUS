@@ -30,6 +30,20 @@ describe("evaluateWalkForward", () => {
     expect(result.compoundedReturnPct).toBeCloseTo(0);
   });
 
+  it("provides training and embargo history as non-trading warm-up context", () => {
+    const result = evaluateWalkForward(candles, {
+      folds: { trainBars: 6, testBars: 4, stepBars: 4, embargoBars: 2 },
+      backtest: { initialCapital: 1000, feeRate: 0, slippageBps: 0, allocationFraction: 0.5 },
+      fit: (training) => (history) =>
+        history.length === training.length + 3 ? "buy"
+          : history.length === training.length + 4 ? "sell" : "hold",
+    });
+    expect(result.folds).toHaveLength(2);
+    expect(result.folds.every((fold) => fold.result.equityCurve.length === 4)).toBe(true);
+    expect(result.folds.every((fold) => fold.result.completedTrades === 1)).toBe(true);
+    expect(result.totalCompletedTrades).toBe(2);
+  });
+
   it("aggregates returns, worst drawdown, fees and trade counts across folds", () => {
     const result = evaluateWalkForward(candles, {
       folds: { trainBars: 6, testBars: 4, stepBars: 4 },
