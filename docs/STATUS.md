@@ -156,3 +156,12 @@ Updated: 2026-11-14
 - Added 5 Vitest specifications for warm-up, causal prefix invariance, range classification, threshold validation, exit-regime attribution, and missing timestamps.
 - No universal thresholds are assumed: values are instrument/timeframe-dependent and must be selected using training data only. The classifier is a research diagnostic, not a strategy signal or execution authorization.
 - Full Vitest, production build and hosted CI remain unverified because GitHub Actions has not allocated runners; no billing settings or payment methods have been changed.
+
+## Baseline strategy library increment
+
+- Added deterministic SMA crossover, incremental Wilder RSI mean-reversion and prior-window Donchian breakout evaluators.
+- Signals are close-based and contain no order-routing code; the existing backtester controls next-open fills, fees, adverse slippage and position sizing.
+- Donchian thresholds explicitly exclude the current candle. RSI state updates incrementally and requires stable chronological history prefixes.
+- Added 4 Vitest specifications for crossover behavior, RSI threshold crossings, Donchian look-ahead protection and parameter validation.
+- Local strict TypeScript compilation passed for the strategy module; a deterministic harness passed SMA buy/sell, RSI buy/sell and Donchian breakout scenarios.
+- These are unoptimized research baselines. No strategy is auto-selected or connected to paper execution.
