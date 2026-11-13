@@ -30,7 +30,7 @@ describe("paper broker", () => {\n  const timestamp = Date.UTC(2026, 0, 1);
   });
 
   it("rejects overspending including fees and slippage", () => {
-    const account = createPaperAccount({ feeRate: 0.01, slippageRate: 0.01, maxPositionValueFraction: 1 }, timestamp);
+    const account = createPaperAccount({ feeRate: 0.06, slippageRate: 0, maxPositionValueFraction: 1 }, timestamp);
     expect(() => executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.2, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
