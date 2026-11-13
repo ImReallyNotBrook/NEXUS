@@ -69,4 +69,14 @@ describe("resolveMarketSnapshot", () => {
       { symbol: "BTCUSDT", interval: "1h", now: 1_700_010_000_000 },
     )).rejects.toThrow(/no fresh market data/i);
   });
+  it("falls through when a provider returns fewer candles than required", async () => {
+    const result = await resolveMarketSnapshot(
+      [provider("primary", async () => [candles[0]]), provider("secondary", async () => candles)],
+      { load: async () => null, save: async () => undefined },
+      { symbol: "BTCUSDT", interval: "1h", now: 1_700_010_000_000, minCandles: 2 },
+    );
+    expect(result.provider).toBe("secondary");
+    expect(result.candles).toHaveLength(2);
+  });
+
 });
