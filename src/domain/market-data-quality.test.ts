@@ -63,7 +63,7 @@ describe("validateSnapshotQuality", () => {
 
 describe("compareMarketSnapshots", () => {
   it("flags overlapping candle closes beyond the configured basis-point threshold", () => {
-    const secondary = candles.map((candle) => ({ ...candle, close: candle.close * 1.01 }));
+    const secondary = candles.map((candle) => ({ ...candle, close: candle.close * 1.01, high: Math.max(candle.high, candle.close * 1.01) }));
     const result = compareMarketSnapshots(snapshot("Binance", candles), snapshot("Kraken", secondary), 20);
     expect(result.status).toBe("discrepancy");
     expect(result.comparedCandles).toBe(3);
@@ -71,7 +71,7 @@ describe("compareMarketSnapshots", () => {
   });
 
   it("passes when overlapping closes are within tolerance", () => {
-    const secondary = candles.map((candle) => ({ ...candle, close: candle.close * 1.0001 }));
+    const secondary = candles.map((candle) => ({ ...candle, close: candle.close * 1.0001, high: Math.max(candle.high, candle.close * 1.0001) }));
     const result = compareMarketSnapshots(snapshot("Binance", candles), snapshot("Kraken", secondary), 20);
     expect(result.status).toBe("within_tolerance");
   });
