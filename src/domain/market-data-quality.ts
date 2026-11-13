@@ -119,7 +119,7 @@ export function validateSnapshotQuality(
     symbol: snapshot.symbol,
     interval: snapshot.interval,
     provider: snapshot.provider,
-    candleCount: snapshot.candles.length,
+    candleCount: Array.isArray(snapshot.candles) ? snapshot.candles.length : 0,
     issues,
   };
 }
