@@ -223,3 +223,14 @@ Updated: 2026-11-14
 - Hypotheses encode mandatory same-data control/candidate comparison, walk-forward testing, fees/slippage, untouched final holdout and no automatic promotion.
 - Added an append-only local IndexedDB hypothesis ledger and schema version 6; added domain and storage test specifications. Tests remain unexecuted due unavailable CI runner.
 - No autonomous web research, LLM inference, GitHub skill installation or automatic experiment execution is connected. The dashboard does not yet expose hypothesis creation. No paid APIs or credentials are used.
+
+
+## Skill Intelligence foundation
+
+- Added a typed external-skill catalogue with repository/version/licence/maintenance/engagement/capability/test/documentation/security/provenance metadata.
+- Newly discovered entries are quarantined by default. Review eligibility requires an allowlisted MIT/Apache-2.0/BSD licence, a commit within 365 days, valid metadata, documented capabilities, verified tests and documentation, a completed security review and source provenance.
+- Added explicit human approval with reviewer identity, rationale and timestamp. Approval creates a separate versioned record; the original discovery record is not overwritten.
+- Added IndexedDB skill registry storage in shared schema version 7. The adapter accepts only non-executable review records and rejects duplicate IDs.
+- Hard boundary: even approved catalogue entries remain non-executable. No external source is downloaded, installed, imported or run. Automated GitHub discovery, isolated code testing, LLM skill authoring and UI controls remain future work.
+- Added domain specifications for quarantine defaults, licence/security eligibility, invalid metadata and human approval. The tests are committed but not run; GitHub Actions runner allocation remains unresolved and the dependency-installed full test/build pipeline is still unverified.
+- See `docs/SKILL_INTELLIGENCE.md` for trust boundaries and review checklist.
