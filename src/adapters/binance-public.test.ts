@@ -32,6 +32,7 @@ describe("fetchBinanceCandles", () => {
     await expect(fetchBinanceCandles({ symbol: "BTC/USDT", interval: "1m" }, fetcher)).rejects.toThrow(/symbol/);
     await expect(fetchBinanceCandles({ symbol: "BTCUSDT", interval: "2m" as "1m" }, fetcher)).rejects.toThrow(/interval/);
     await expect(fetchBinanceCandles({ symbol: "BTCUSDT", interval: "1m", limit: 1001 }, fetcher)).rejects.toThrow(/limit/);
+    await expect(fetchBinanceCandles({ symbol: "BTCUSDT", interval: "1m", endTime: -1 }, fetcher)).rejects.toThrow(/endTime/);
     expect(fetcher).not.toHaveBeenCalled();
   });
 
@@ -42,6 +43,9 @@ describe("fetchBinanceCandles", () => {
     const invalidOhlc = [0, "100", "99", "90", "105", "1", 59_999];
     const invalid: typeof fetch = async () => new Response(JSON.stringify([invalidOhlc]), { status: 200 });
     await expect(fetchBinanceCandles({ symbol: "BTCUSDT", interval: "1m" }, invalid, 60_000)).rejects.toThrow(/OHLC/);
+
+    const nullOpen: typeof fetch = async () => new Response(JSON.stringify([[0, null, "110", "90", "105", "1", 59_999]]), { status: 200 });
+    await expect(fetchBinanceCandles({ symbol: "BTCUSDT", interval: "1m" }, nullOpen, 60_000)).rejects.toThrow(/open/);
   });
 
   it("surfaces HTTP errors without treating them as empty market data", async () => {
