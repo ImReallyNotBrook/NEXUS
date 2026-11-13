@@ -33,7 +33,7 @@ describe("ATR", () => {
     const high = [10, 12, 13, 14];
     const low = [8, 9, 11, 12];
     const close = [9, 11, 12, 13];
-    expect(atr(high, low, close, 2)).toEqual([null, 2.5, 2.75, 2.875]);
+    expect(atr(high, low, close, 2)).toEqual([null, 2.5, 2.25, 2.125]);
   });
 
   it("rejects mismatched or invalid OHLC series", () => {
