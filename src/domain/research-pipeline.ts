@@ -30,6 +30,12 @@ export interface ResearchCandidateResult {
   regimeScorecard: RegimeScorecard;
 }
 
+export interface ResearchDatasetMetadata {
+  symbol: string;
+  interval: string;
+  provider: string;
+}
+
 export interface ResearchBatchResult {
   dataset: {
     candleCount: number;
@@ -37,6 +43,7 @@ export interface ResearchBatchResult {
     lastTimestamp: number;
     /** Non-cryptographic fingerprint for reproducibility checks, not security. */
     fingerprint: string;
+    metadata?: ResearchDatasetMetadata;
   };
   config: ResearchPipelineConfig;
   candidateResults: ResearchCandidateResult[];
@@ -61,6 +68,7 @@ export function runResearchBatch(
   inputCandles: readonly Candle[],
   candidates: readonly ResearchCandidate[],
   config: ResearchPipelineConfig,
+  metadata?: ResearchDatasetMetadata,
 ): ResearchBatchResult {
   if (!Array.isArray(candidates) || candidates.length === 0) {
     throw new RangeError("At least one research candidate is required");
@@ -101,6 +109,7 @@ export function runResearchBatch(
       firstTimestamp: candles[0].timestamp,
       lastTimestamp: candles[candles.length - 1].timestamp,
       fingerprint: fingerprintCandles(candles),
+      ...(metadata ? { metadata: { ...metadata } } : {}),
     },
     config: {
       folds: { ...config.folds },
