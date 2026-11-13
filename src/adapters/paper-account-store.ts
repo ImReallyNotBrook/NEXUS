@@ -3,7 +3,8 @@ import type { PaperAccount } from "../domain/paper-broker";
 const DATABASE_NAME = "nexus-local";
 const DATABASE_VERSION = 2;
 const ACCOUNT_STORE = "paperAccounts";
-const DEFAULT_ACCOUNT_ID = "default";\nconst CANDLE_STORE = "marketSnapshots";
+const DEFAULT_ACCOUNT_ID = "default";
+const CANDLE_STORE = "marketSnapshots";
 
 interface StoredPaperAccount {
   id: string;
