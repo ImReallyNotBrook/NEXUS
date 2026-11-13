@@ -129,7 +129,6 @@ export function executePaperMarketOrder(
 
   const equity = equityOf(account);
   const dailyLoss = (account.dailyStartEquity - equity) / account.dailyStartEquity;
-  if (dailyLoss >= config.maxDailyLossFraction) throw new Error("Daily loss limit reached; new orders are blocked");
 
   const executionPrice = request.side === "buy"
     ? request.referencePrice * (1 + config.slippageRate)
@@ -143,7 +142,11 @@ export function executePaperMarketOrder(
   let fillRealizedPnl = 0;
 
   if (request.side === "buy") {
-    if (notional > equity * config.maxPositionValueFraction) throw new Error("Order exceeds the position allocation limit");
+    if (dailyLoss >= config.maxDailyLossFraction) throw new Error("Daily loss limit reached; new orders are blocked");
+    const currentPositionValue = (positions[symbol]?.quantity ?? 0) * executionPrice;
+    if (currentPositionValue + notional > equity * config.maxPositionValueFraction) {
+      throw new Error("Order exceeds the position allocation limit");
+    }
     if (notional + fee > cash) throw new Error("Insufficient cash for order including fees");
     const current = positions[symbol];
     const oldQuantity = current?.quantity ?? 0;
