@@ -59,3 +59,12 @@ This module is a deterministic research orchestration layer. It is not yet expos
 ## Mobile dashboard console
 
 The dashboard includes a form to choose a market pair, interval, candle count, training/test window sizes, fee and slippage assumptions. It downloads bounded completed public Binance spot candles, runs the three fixed baseline candidates, and renders out-of-sample summary metrics, regime breakdowns and per-fold details. The UI caps history at 5,000 candles and estimated folds at 40 to limit work on mobile hardware. A dataset FNV-1a fingerprint is displayed for repeat-run identification; it is not cryptographic and does not authenticate data. The console currently does not persist experiment reports between sessions.
+
+
+## Local experiment persistence
+
+Completed reports are saved to the shared versioned IndexedDB database. The history view can reopen or delete saved runs. Records include the complete fold ledgers, candidate metrics, market-regime breakdown, dataset fingerprint and configuration. Storage is browser/device-local; clearing site data or changing browsers can remove or hide records. There is no cloud sync or backup. The local store is bounded at display time to the newest 50 records; it does not automatically delete older records.
+
+## Strategy configuration governance
+
+Candidate configuration changes are represented as versioned proposals with explicit parameters, a named evaluation metric, baseline/candidate scores, test status, regression count and source-backed evidence. A proposal cannot be approved unless the candidate score improves the named metric, all tests pass and regression count is zero. Approval requires an identified human, a rationale and timestamp. Approved versions are immutable ledger entries; this stage does not automatically apply them to baseline code, paper trading or live execution. There is no connected LLM making autonomous proposals yet; the governance API is the controlled interface for future AI-generated recommendations.
