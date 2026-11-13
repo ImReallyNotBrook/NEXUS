@@ -61,8 +61,8 @@ describe("validateSnapshotQuality", () => {
   });
 
   it("fails when the latest completed candle is too old even if the fetch is recent", () => {
-    const result = validateSnapshotQuality(snapshot("Binance", candles, base + 19_900_000), {
-      now: base + 20_000_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+    const result = validateSnapshotQuality(snapshot("Binance", candles, base + 20 * 3_600_000 - 100_000), {
+      now: base + 20 * 3_600_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     expect(result.status).toBe("fail");
     expect(result.issues.some((issue) => issue.code === "LAST_CANDLE_STALE")).toBe(true);
