@@ -113,7 +113,7 @@ export function validateSnapshotQuality(
         message: "Latest candle interval has not closed yet",
         candleTimestamp: last.timestamp,
       });
-    } else if (options.now - lastCloseTime > options.maxAgeMs) {
+    } else if (options.now - lastCloseTime > options.intervalMs + options.maxAgeMs) {
       issues.push({
         code: "LAST_CANDLE_STALE",
         severity: "error",
