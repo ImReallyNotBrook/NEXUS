@@ -121,6 +121,8 @@ describe("buildRegimeScorecard", () => {
     expect(report.classifiedTrades).toBe(2);
     expect(report.unclassifiedTrades).toBe(0);
     const uptrend = report.groups.find((item) => item.trend === "uptrend" && item.volatility === "normal");
+    expect(report.classifiedTrades).toBe(2);
+    expect(report.unclassifiedTrades).toBe(0);
     expect(uptrend).toMatchObject({
       completedTrades: 2,
       winningTrades: 1,
