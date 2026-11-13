@@ -206,3 +206,11 @@ Updated: 2026-11-14
 - Added 3 research-run store tests, 2 strategy config ledger store tests, 4 governance tests and shared schema assertions. These specifications are committed but not executed in a dependency-installed environment.
 - No LLM is connected to generate recommendations, no approved configuration is automatically applied to strategy code or paper trading, and no live execution permission can be granted by this workflow. Browser-local data has no cloud backup and may be lost if site data is cleared.
 - Full Vitest, production build, hosted CI and Android browser integration remain unverified because GitHub Actions runner allocation is blocked by the account billing authorization warning. No payment method, paid runner or spending limit changes were made.
+
+
+## Research history comparison and provenance follow-up
+
+- Added two-run comparison by stable candidate ID, including deltas in compounded out-of-sample return, worst-fold drawdown, trade count, win rate and positive-fold share.
+- Comparisons are certified as apples-to-apples only when dataset fingerprint, candle count, timestamp bounds, market symbol, interval, provider and complete walk-forward/execution configuration match. Legacy reports without market provenance fail closed.
+- Research reports now record market symbol, interval and public data provider in their dataset metadata. The fingerprint remains a non-cryptographic FNV-1a identifier and is not proof of data authenticity.
+- Added 4 comparison specifications including market mismatch and missing-provenance rejection. These tests are committed but not run because the dependency-installed test environment is unavailable.
