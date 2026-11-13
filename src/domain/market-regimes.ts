@@ -25,6 +25,12 @@ export interface MarketRegime {
   atrPct: number | null;
 }
 
+export interface RegimeScorecard {
+  groups: RegimePerformance[];
+  classifiedTrades: number;
+  unclassifiedTrades: number;
+}
+
 export interface RegimePerformance {
   trend: Exclude<TrendRegime, "unknown">;
   volatility: Exclude<VolatilityRegime, "unknown">;
@@ -107,18 +113,20 @@ export function classifyMarketRegimes(
 
     return { timestamp: candle.timestamp, trend, volatility, emaSpreadPct, atrPct };
   });
+  return { groups, classifiedTrades, unclassifiedTrades };
 }
 
 /**
- * Attributes each completed trade to the regime at its exit candle.
- * Trades with an unknown warm-up regime are excluded from the grouped report;
- * a missing exit candle is a data-integrity error and fails closed.
+ * Attributes each completed trade to the regime known when the exit decision
+ * was made: the candle immediately before the next-open exit fill. This avoids
+ * using the exit candle close/high/low, which were not known at fill time.
+ * Warm-up trades are counted as unclassified; missing timestamps fail closed.
  */
 export function buildRegimeScorecard(
   candles: readonly Candle[],
   evaluation: WalkForwardEvaluationResult,
   config: MarketRegimeConfig,
-): RegimePerformance[] {
+): RegimeScorecard {
   const regimes = classifyMarketRegimes(candles, config);
   const byTimestamp = new Map(regimes.map((regime) => [regime.timestamp, regime]));
   const trendLabels = ["uptrend", "downtrend", "range"] as const;
@@ -131,17 +139,24 @@ export function buildRegimeScorecard(
     }
   }
 
+  let classifiedTrades = 0;
+  let unclassifiedTrades = 0;
   for (const fold of evaluation.folds) {
     for (const trade of fold.result.trades) {
       if (!Number.isFinite(trade.pnl)) throw new TypeError("Trade PnL must be finite");
-      const regime = byTimestamp.get(trade.exitTimestamp);
-      if (!regime) throw new RangeError("Trade exit timestamp is missing from supplied candles");
-      if (regime.trend === "unknown" || regime.volatility === "unknown") continue;
-      buckets.get(`${regime.trend}:${regime.volatility}`)!.pnls.push(trade.pnl);
+      const exitIndex = regimes.findIndex((item) => item.timestamp === trade.exitTimestamp);
+      if (exitIndex < 0) throw new RangeError("Trade exit timestamp is missing from supplied candles");
+      const decisionRegime = exitIndex > 0 ? regimes[exitIndex - 1] : undefined;
+      if (!decisionRegime || decisionRegime.trend === "unknown" || decisionRegime.volatility === "unknown") {
+        unclassifiedTrades += 1;
+        continue;
+      }
+      buckets.get(`${decisionRegime.trend}:${decisionRegime.volatility}`)!.pnls.push(trade.pnl);
+      classifiedTrades += 1;
     }
   }
 
-  return [...buckets.values()].filter((bucket) => bucket.pnls.length > 0).map((bucket) => {
+  const groups = [...buckets.values()].filter((bucket) => bucket.pnls.length > 0).map((bucket) => {
     const winningTrades = bucket.pnls.filter((pnl) => pnl > 0).length;
     const losingTrades = bucket.pnls.filter((pnl) => pnl < 0).length;
     const grossProfit = bucket.pnls.reduce((sum, pnl) => sum + Math.max(0, pnl), 0);
