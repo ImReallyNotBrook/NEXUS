@@ -20,6 +20,12 @@ export interface BinanceCandleRequest {
 type BinanceKlineRow = unknown[];
 
 function parseNumber(value: unknown, field: string): number {
+  if (typeof value !== "number" && typeof value !== "string") {
+    throw new TypeError("Binance returned invalid " + field);
+  }
+  if (typeof value === "string" && value.trim() === "") {
+    throw new TypeError("Binance returned invalid " + field);
+  }
   const parsed = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(parsed)) throw new TypeError("Binance returned invalid " + field);
   return parsed;
@@ -42,6 +48,9 @@ export async function fetchBinanceCandles(
     throw new RangeError("limit must be an integer between 1 and 1000");
   }
   if (!Number.isSafeInteger(now) || now < 0) throw new RangeError("now must be a non-negative timestamp");
+  if (request.endTime !== undefined && (!Number.isSafeInteger(request.endTime) || request.endTime < 0)) {
+    throw new RangeError("endTime must be a non-negative safe integer");
+  }
 
   const url = new URL(BINANCE_PUBLIC_DATA_URL);
   url.search = new URLSearchParams({
