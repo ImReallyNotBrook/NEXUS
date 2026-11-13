@@ -126,3 +126,12 @@ Updated: 2026-11-14
 - Full Vitest/build and hosted browser verification remain unverified because GitHub Actions still fails before runner allocation.
 
 - Additional local verification after the warm-up edge-case fix: strict TypeScript compilation passed; deterministic walk-forward harness passed warm-up isolation, invalid empty-dataset warm-up rejection and three independent out-of-sample folds.
+
+## Hybrid AI skill system increment
+
+- Added six original agent skills for quant research, strategy engineering, backtest auditing, risk governance, skill evolution and market-data quality under `.agents/skills/`.
+- Added evidence notes on supervised adaptive model training and an open-source reuse/licence audit. FreqAI's chronological retraining, versioned artifacts, warm-up and backtest replay are treated as design references only; no GPL code is copied.
+- Added a hybrid learning/skill-governance policy: evidence-backed knowledge notes are the only potential auto-promotion scope; methodology, code, system, risk, qualification and execution changes require human approval.
+- Added a typed governance module and 8 Vitest specifications for semantic version progression, evidence, score improvement, regression checks, changed-file classification, path traversal, immutable promotion and human approval.
+- Local strict TypeScript compilation passed for the governance module; a deterministic Node harness passed 7 governance scenarios.
+- This is an instruction and proposal framework, not an on-device LLM or self-training model. No model API or paid inference service is connected. Automatic promotion remains operationally disabled until a trusted evaluation runner and full CI suite are verified.
