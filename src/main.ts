@@ -191,6 +191,7 @@ async function loadMarketSnapshot(): Promise<void> {
     });
     let crossFeedStatus = "Cross-feed check unavailable";
     let crossFeedDiscrepancy = false;
+    let crossFeedConfirmed = false;
     const secondaryProvider = marketProviders.find((provider) => provider.name !== snapshot.provider);
     if (secondaryProvider) {
       try {
@@ -203,6 +204,7 @@ async function loadMarketSnapshot(): Promise<void> {
         };
         const comparison = compareMarketSnapshots(snapshot, secondarySnapshot, 50);
         crossFeedDiscrepancy = comparison.status === "discrepancy";
+        crossFeedConfirmed = comparison.status === "within_tolerance";
         crossFeedStatus = comparison.status === "within_tolerance"
           ? "Cross-feed within 50 bps · " + comparison.comparedCandles + " candles"
           : comparison.status === "discrepancy"
@@ -212,7 +214,7 @@ async function loadMarketSnapshot(): Promise<void> {
         crossFeedStatus = "Cross-feed check unavailable";
       }
     }
-    marketDataTrusted = quality.status !== "fail" && !crossFeedDiscrepancy && !snapshot.stale;
+    marketDataTrusted = quality.status !== "fail" && crossFeedConfirmed && !crossFeedDiscrepancy && !snapshot.stale;
     if (qualityElement) {
       qualityElement.textContent = "Data quality: " + quality.status.toUpperCase() + " · " +
         quality.issues.map((issue) => issue.code).join(", ") + (quality.issues.length ? " · " : "") + crossFeedStatus;
