@@ -57,6 +57,10 @@ export class StrategyConfigLedgerStore {
     proposal: StrategyConfigProposal,
     approval: StrategyConfigApproval,
   ): Promise<ApprovedStrategyConfigVersion> {
+    const pending = await this.list(500);
+    if (!pending.some((entry) => entry.status === "pending" && entry.proposal.id === proposal.id)) {
+      throw new Error("A saved pending proposal is required before approval");
+    }
     const version = approveStrategyConfigProposal(proposal, approval);
     const record: StrategyConfigLedgerEntry = {
       id: "version:" + version.id,
