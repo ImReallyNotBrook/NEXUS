@@ -1,4 +1,5 @@
 import { validateCandles, type Candle } from "./candles";
+import { resolveLongProtectiveExit, type ProtectiveExitConfig } from "./protective-orders";
 
 export type BacktestSignal = "buy" | "sell" | "hold";
 export type StrategyEvaluator = (history: readonly Candle[]) => BacktestSignal;
@@ -10,6 +11,8 @@ export interface BacktestConfig {
   allocationFraction: number;
   /** Number of leading candles used only as strategy context, not traded or reported. */
   warmupBars?: number;
+  /** Optional long-only protective exits. Orders become active from the candle after entry. */
+  protectiveOrders?: ProtectiveExitConfig;
 }
 
 export interface BacktestTrade {
@@ -22,6 +25,7 @@ export interface BacktestTrade {
   exitFee: number;
   pnl: number;
   pnlPct: number;
+  exitReason: "signal" | "stop-loss" | "take-profit";
 }
 
 export interface BacktestPosition {
@@ -69,11 +73,41 @@ export function runBacktest(
 
   let cash = initialCapital;
   let position: BacktestPosition | null = null;
+  let entryIndex = -1;
   let pending: BacktestSignal = "hold";
   let totalFees = 0;
   const trades: BacktestTrade[] = [];
   const equityCurve: BacktestResult["equityCurve"] = [];
   const slippage = slippageBps / 10_000;
+
+  const closePosition = (
+    timestamp: number,
+    referencePrice: number,
+    reason: BacktestTrade["exitReason"],
+    applyAdverseSlippage: boolean,
+  ): void => {
+    if (!position) return;
+    const fillPrice = referencePrice * (applyAdverseSlippage ? 1 - slippage : 1);
+    const notional = position.quantity * fillPrice;
+    const exitFee = notional * feeRate;
+    const pnl = notional - exitFee - position.entryCost;
+    cash += notional - exitFee;
+    totalFees += exitFee;
+    trades.push({
+      entryTimestamp: position.entryTimestamp,
+      exitTimestamp: timestamp,
+      entryPrice: position.entryPrice,
+      exitPrice: fillPrice,
+      quantity: position.quantity,
+      entryFee: position.entryFee,
+      exitFee,
+      pnl,
+      pnlPct: (pnl / position.entryCost) * 100,
+      exitReason: reason,
+    });
+    position = null;
+    entryIndex = -1;
+  };
 
   for (let i = 0; i < candles.length; i += 1) {
     const candle = candles[i];
@@ -90,26 +124,23 @@ export function runBacktest(
         cash -= entryCost;
         totalFees += fee;
         position = { entryTimestamp: candle.timestamp, entryPrice: fillPrice, quantity, entryFee: fee, entryCost };
+        entryIndex = i;
       }
     } else if (i >= warmupBars && pending === "sell" && position !== null) {
-      const fillPrice = candle.open * (1 - slippage);
-      const notional = position.quantity * fillPrice;
-      const exitFee = notional * feeRate;
-      const pnl = notional - exitFee - position.entryCost;
-      cash += notional - exitFee;
-      totalFees += exitFee;
-      trades.push({
-        entryTimestamp: position.entryTimestamp,
-        exitTimestamp: candle.timestamp,
-        entryPrice: position.entryPrice,
-        exitPrice: fillPrice,
-        quantity: position.quantity,
-        entryFee: position.entryFee,
-        exitFee,
-        pnl,
-        pnlPct: (pnl / position.entryCost) * 100,
-      });
-      position = null;
+      // A close-generated strategy exit is already queued for this opening auction.
+      closePosition(candle.timestamp, candle.open, "signal", true);
+    } else if (i >= warmupBars && position !== null && entryIndex < i && config.protectiveOrders) {
+      // Never inspect the entry candle's high/low: entry occurs at its open and intrabar
+      // ordering is unknown. Protective orders become active on the following candle.
+      const protectiveExit = resolveLongProtectiveExit(position.entryPrice, candle, config.protectiveOrders);
+      if (protectiveExit) {
+        closePosition(
+          candle.timestamp,
+          protectiveExit.referencePrice,
+          protectiveExit.reason,
+          protectiveExit.reason === "stop-loss",
+        );
+      }
     }
     pending = "hold";
 
