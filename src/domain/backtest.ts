@@ -1,5 +1,5 @@
 import { validateCandles, type Candle } from "./candles";
-import { resolveLongProtectiveExit, type ProtectiveExitConfig } from "./protective-orders";
+import { resolveLongProtectiveExit, validateProtectiveExitConfig, type ProtectiveExitConfig } from "./protective-orders";
 
 export type BacktestSignal = "buy" | "sell" | "hold";
 export type StrategyEvaluator = (history: readonly Candle[]) => BacktestSignal;
@@ -56,6 +56,7 @@ export function runBacktest(
   config: BacktestConfig,
 ): BacktestResult {
   const { initialCapital, feeRate, slippageBps, allocationFraction } = config;
+  if (config.protectiveOrders) validateProtectiveExitConfig(config.protectiveOrders);
   if (!Number.isFinite(initialCapital) || initialCapital <= 0) throw new RangeError("initialCapital must be positive");
   if (!Number.isFinite(feeRate) || feeRate < 0 || feeRate >= 1) throw new RangeError("feeRate must be in [0, 1)");
   if (!Number.isFinite(slippageBps) || slippageBps < 0 || slippageBps >= 10_000) throw new RangeError("slippageBps must be in [0, 10000)");
