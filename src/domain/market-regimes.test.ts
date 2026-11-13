@@ -16,7 +16,7 @@ function candlesFromCloses(closes: number[], interval = 60_000): Candle[] {
 
 function evaluationWithTrades(trades: Array<{ exitTimestamp: number; pnl: number }>): WalkForwardEvaluationResult {
   const ledger = trades.map((trade) => ({
-    entryTimestamp: trade.exitTimestamp - 60_000,
+    entryTimestamp: Math.max(0, trade.exitTimestamp - 60_000),
     exitTimestamp: trade.exitTimestamp,
     entryPrice: 100,
     exitPrice: 100,
@@ -103,7 +103,7 @@ describe("classifyMarketRegimes", () => {
 });
 
 describe("buildRegimeScorecard", () => {
-  it("attributes completed trades to the exit candle regime and reports net expectancy", () => {
+  it("attributes completed trades to the pre-exit decision regime and reports net expectancy", () => {
     const candles = candlesFromCloses([100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111]);
     const config = {
       fastEmaPeriod: 2,
@@ -118,8 +118,6 @@ describe("buildRegimeScorecard", () => {
       { exitTimestamp: 10 * 60_000, pnl: -5 },
     ]);
     const report = buildRegimeScorecard(candles, evaluation, config);
-    expect(report.classifiedTrades).toBe(2);
-    expect(report.unclassifiedTrades).toBe(0);
     const uptrend = report.groups.find((item) => item.trend === "uptrend" && item.volatility === "normal");
     expect(report.classifiedTrades).toBe(2);
     expect(report.unclassifiedTrades).toBe(0);
@@ -131,6 +129,19 @@ describe("buildRegimeScorecard", () => {
       expectancyPerTrade: 2.5,
       winRatePct: 50,
     });
+  });
+
+  it("counts trades without a prior classified decision candle as unclassified", () => {
+    const candles = candlesFromCloses([100, 101, 102, 103, 104, 105]);
+    const report = buildRegimeScorecard(candles, evaluationWithTrades([
+      { exitTimestamp: 0, pnl: 2 },
+    ]), {
+      fastEmaPeriod: 2, slowEmaPeriod: 3, atrPeriod: 2,
+      trendThresholdPct: 0.1, lowVolatilityAtrPct: 0.1, highVolatilityAtrPct: 10,
+    });
+    expect(report.classifiedTrades).toBe(0);
+    expect(report.unclassifiedTrades).toBe(1);
+    expect(report.groups).toHaveLength(0);
   });
 
   it("rejects trades whose exit timestamp is absent from supplied market data", () => {
