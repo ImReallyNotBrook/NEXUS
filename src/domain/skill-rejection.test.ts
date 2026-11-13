@@ -16,6 +16,7 @@ describe("rejectSkill", () => {
     expect(rejected.status).toBe("rejected");
     expect(rejected.executable).toBe(false);
     expect(rejected.approvedBy).toBeNull();
+    expect(rejected.rejectedBy).toBe("Reviewer");
     expect(rejected.approvalRationale).toContain("unsafe");
     expect(rejected.reviewedAt).toBeTypeOf("number");
     expect(rejected.id).not.toBe(candidate.id);
