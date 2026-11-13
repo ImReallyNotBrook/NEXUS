@@ -2,7 +2,7 @@
 
 Updated: 2026-11-14
 
-This catalogue records upstream projects as **research references**, not trusted dependencies. The NEXUS seed catalogue pins each candidate to a short commit SHA and records the observed repository licence, last default-branch commit date, GitHub stars and open issue count. Counts are a snapshot and will change.
+This catalogue records upstream projects as **research references**, not trusted dependencies. The NEXUS seed catalogue pins each candidate to an immutable full commit SHA and records the observed repository licence, last default-branch commit date, GitHub stars and open issue count. Counts are a snapshot and will change.
 
 The seed function intentionally marks every entry as `quarantined`, with tests, documentation and security review set to unverified. A README or a GitHub licence badge is not a security audit. No source code is cloned, installed, imported or executed.
 
@@ -80,3 +80,10 @@ The original FinRL README now positions that repository as an educational/resear
 - https://github.com/nautechsystems/nautilus_trader
 - https://github.com/polakowo/vectorbt
 - https://github.com/kernc/backtesting.py
+
+
+## Source-level review update (2026-11-14)
+
+Jesse and FinRL-X were inspected at immutable commit revisions. The review found useful execution-cutoff, gap-fill, significance-testing and bootstrap test patterns in Jesse. FinRL-X offers a target-weight portfolio-intent architecture and configurable commissions, but its inspected walk-forward runner generates decisions from training slices without simulating subsequent OOS execution; its backtest wrapper also does not explicitly lag weight signals to next-bar fills. See [the pinned source-level review](./EXTERNAL_SOURCE_REVIEW_2026-11-14.md) for reviewed files, findings and NEXUS adoption decisions.
+
+Both remain quarantined. Reading selected tests and source is not equivalent to executing a full test suite or completing a security audit, so catalogue test/documentation/security verification flags remain false.
