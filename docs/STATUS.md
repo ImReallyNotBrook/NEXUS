@@ -176,3 +176,12 @@ Updated: 2026-11-14
 - Added `docs/RESEARCH_PIPELINE.md` with architecture, controls and illustrative usage. The pipeline deliberately does not rank, optimize, auto-select, promote or execute strategies.
 - No curated historical experiment has been run yet. The example parameters are illustrative, not calibrated or evidence of an edge. Dashboard integration, final untouched holdout and expanded execution-cost modelling remain outstanding.
 - Full Vitest and production build remain unverified because GitHub Actions still fails before runner allocation; no billing or payment settings have been changed.
+
+## Reproducible multi-strategy research pipeline increment
+
+- Added a research-batch runner that evaluates multiple candidate strategy factories on identical chronological walk-forward folds, warm-up rules, costs, slippage and sizing assumptions.
+- Each candidate returns a walk-forward evaluation, trade/fold scorecard and regime attribution. Candidate factories are re-created per fold and receive training data only.
+- Candidate IDs must be versioned when logic or parameters change. Dataset metadata now includes a deterministic 32-bit FNV-1a fingerprint for reproducibility (not cryptographic integrity).
+- The pipeline does not rank, tune, select, promote or execute candidates.
+- Added 3 Vitest specifications for identical fold windows, candidate validation, input immutability and dataset fingerprint sensitivity.
+- Local strict TypeScript compilation passed for the research pipeline and all imported domain modules. Full Vitest and production build remain unverified because hosted Actions runners are not allocated.
