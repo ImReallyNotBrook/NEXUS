@@ -153,6 +153,6 @@ Updated: 2026-11-14
 - Added a causal trend/volatility classifier using SMA-seeded fast/slow EMA spread and Wilder ATR as a percentage of close. Warm-up values are explicitly unknown; thresholds are supplied configuration and are not fitted on the reported test window.
 - Added regime-level walk-forward trade attribution. Because exits fill at the next candle open, each completed trade is attributed to the prior candle's regime, avoiding use of the exit candle's not-yet-known close/high/low. Missing exit timestamps fail closed; warm-up trades are counted as unclassified.
 - Regime scorecard reports completed trades, win rate, fee/slippage-inclusive net PnL, gross profit/loss, profit factor and expectancy by trend × volatility bucket.
-- Added 4 Vitest specifications for warm-up, causal prefix invariance, range classification, threshold validation, exit-regime attribution, and missing timestamps.
+- Added 5 Vitest specifications for warm-up, causal prefix invariance, range classification, threshold validation, exit-regime attribution, and missing timestamps.
 - No universal thresholds are assumed: values are instrument/timeframe-dependent and must be selected using training data only. The classifier is a research diagnostic, not a strategy signal or execution authorization.
 - Full Vitest, production build and hosted CI remain unverified because GitHub Actions has not allocated runners; no billing settings or payment methods have been changed.
