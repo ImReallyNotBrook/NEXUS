@@ -95,3 +95,5 @@ Updated: 2026-11-14
 - Local TypeScript strict compilation passed for the fold generator. A deterministic Node harness passed 12 assertions.
 - The fold generator partitions data only; strategy selection, parameter tuning, fold-level backtests and untouched final holdout evaluation remain future work. It does not eliminate data snooping, survivorship bias or regime shift.
 - Full Vitest suite and production build remain unverified while GitHub Actions jobs fail before runner allocation.
+
+- Walk-forward follow-up: added a regression check rejecting `stepBars < testBars`; overlapping out-of-sample windows would otherwise reuse test observations and overstate the number of independent evaluation windows. Local strict TypeScript compile passed and the updated deterministic harness passed 13 assertions.
