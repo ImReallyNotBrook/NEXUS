@@ -255,3 +255,13 @@ Updated: 2026-11-14
 - Added the missing FinRL-X catalogue candidate (Apache-2.0, pinned metadata snapshot) to reconcile the nine-project research inventory with the seed catalogue and existing catalogue test.
 - Approval and rejection remain metadata-only. Every record has `executable: false`; the app never clones, installs, imports or runs external repository code. A checkbox attestation is a human assertion, not independent verification by NEXUS.
 - Added rejection-governance tests. Existing catalogue test already checks FinRL-X inclusion. Tests, full Vitest suite, production build and Android browser interaction have not been executed in this environment. GitHub Actions runner allocation remains the verification blocker; no billing changes have been made.
+
+
+## Pinned upstream source review and causal regression tests
+
+- Inspected Jesse at `9afc357a5675a44b31dbf5d7c5244112a2c262cb`: selected backtest/exchange code and tests for candle execution cutoffs, gap-through stop/take-profit fills, fee-inclusive PnL, signal significance and moving-block bootstrap candle validity. Findings and limitations are recorded in `docs/EXTERNAL_SOURCE_REVIEW_2026-11-14.md`.
+- Inspected FinRL-X at `4409abe925c904e570be78ebfb5e77ac3491dff8`: target-weight backtest interface, proportional commissions, point-in-time data slicing, walk-forward runner and stop-loss manager. Critical finding: the inspected walk-forward runner generates strategy outputs from training slices but does not itself execute the subsequent test windows; the backtest wrapper does not explicitly lag target weights to next-bar execution. This is not accepted as NEXUS OOS proof.
+- Upgraded Jesse and FinRL-X catalogue revision pins to full immutable commit SHAs. Both remain quarantined; no upstream code or dependencies were copied, installed or executed.
+- Added NEXUS regression specifications asserting that strategy evaluators receive only immutable history through the current close, and that walk-forward train/embargo timestamps remain strictly before each test window.
+- Existing NEXUS tests already specify next-candle-open fills and two-sided fee/adverse-slippage accounting. Gap-through-stop execution is not yet a NEXUS feature; it requires a separately designed stop-order model rather than pretending a simple close-signal engine supports it.
+- Tests are committed but have not been executed. Full Vitest, production build, browser integration and CI remain unverified; no paid runner or billing change was made.
