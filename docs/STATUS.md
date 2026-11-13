@@ -265,3 +265,6 @@ Updated: 2026-11-14
 - Added NEXUS regression specifications asserting that strategy evaluators receive only immutable history through the current close, and that walk-forward train/embargo timestamps remain strictly before each test window.
 - Existing NEXUS tests already specify next-candle-open fills and two-sided fee/adverse-slippage accounting. Gap-through-stop execution is not yet a NEXUS feature; it requires a separately designed stop-order model rather than pretending a simple close-signal engine supports it.
 - Tests are committed but have not been executed. Full Vitest, production build, browser integration and CI remain unverified; no paid runner or billing change was made.
+
+
+- Latest Pages workflow run for commit `1bc618a324927b591c0a7087e59cf680608c2e9f` (run `43513945778`) completed with failure before exposing any job steps or logs. Deployment remains unverified; the failure cause cannot be diagnosed from the available GitHub job metadata.
