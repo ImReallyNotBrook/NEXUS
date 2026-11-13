@@ -1,5 +1,6 @@
 import "./style.css";
 import { mountResearchConsole } from "./domain/research-console";
+import { mountSkillConsole } from "./domain/skill-console";
 import { evaluateQualification } from "./domain/qualification";
 import { rsi } from "./domain/indicators";
 import { fetchBinanceCandles, type BinanceInterval } from "./adapters/binance-public";
@@ -68,6 +69,7 @@ root.innerHTML = `
       <article class="panel"><span class="panel-label">SYSTEM STATUS</span><h2>Core safeguards</h2><ul><li>Paper trading only</li><li>AI changes require approval</li><li>Backtest integrity enforced</li></ul></article>
     </section>
     <div id="research-console-mount"></div>
+    <div id="skill-console-mount"></div>
     <footer> NEXUS v0.1.0 <span>BUILDING THE EVIDENCE ENGINE</span></footer>
   </main>
 `;
@@ -75,6 +77,8 @@ root.innerHTML = `
 document.documentElement.dataset.qualificationReady = String(!result.qualified);
 const researchConsoleMount = document.querySelector<HTMLElement>("#research-console-mount");
 if (researchConsoleMount) mountResearchConsole(researchConsoleMount);
+const skillConsoleMount = document.querySelector<HTMLElement>("#skill-console-mount");
+if (skillConsoleMount) mountSkillConsole(skillConsoleMount);
 
 const priceElement = document.querySelector<HTMLElement>("#btc-price");
 const changeElement = document.querySelector<HTMLElement>("#btc-change");
