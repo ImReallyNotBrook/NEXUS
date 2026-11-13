@@ -32,10 +32,13 @@ export class SkillRegistryStore {
   }
 
   async register(skill: SkillRecord): Promise<void> {
-    if (!skill || skill.executable !== false ||
-        (skill.status !== "quarantined" && skill.status !== "review-required") ||
-        skill.approvedBy !== null || skill.reviewedAt !== null) {
-      throw new TypeError("Only unapproved, non-executable skill metadata can be registered");
+    const isUnapproved = skill?.status === "quarantined" || skill?.status === "review-required";
+    const isApproved = skill?.status === "approved" && typeof skill.approvedBy === "string" &&
+      skill.approvedBy.trim().length >= 2 && typeof skill.approvalRationale === "string" &&
+      skill.approvalRationale.trim().length >= 10 && Number.isSafeInteger(skill.reviewedAt);
+    if (!skill || skill.executable !== false || (!isUnapproved && !isApproved) ||
+        (isUnapproved && (skill.approvedBy !== null || skill.reviewedAt !== null))) {
+      throw new TypeError("Only valid, non-executable skill review records can be registered");
     }
     const database = await this.openDatabase();
     const transaction = database.transaction(SKILL_REGISTRY_STORE, "readwrite");
