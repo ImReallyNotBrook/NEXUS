@@ -27,12 +27,12 @@ A local cache write failure does not invalidate a fresh provider response. Cache
 
 Market snapshots share the versioned `nexus-local` IndexedDB database with paper accounts. Schema version 2 adds the `marketSnapshots` object store. Cache keys are symbol plus interval, so BTC/USD hourly data cannot overwrite BTC/USDT or another timeframe.
 
-The cache is device-local, not a cloud backup. Browser data clearing or eviction can remove it.
+The cache is device-local, not a cloud backup. Browser data clearing or eviction can remove it. Paper-account and market-snapshot adapters use one shared schema owner and database version, which creates both object stores in the same upgrade transaction and closes old connections on version changes.
 
 ## Data-quality and research limits
 
 - OHLCV timestamps are milliseconds in the domain model.
-- Candles must be strictly increasing; the system does not sort or repair bad provider data.
+- Candles must be strictly increasing and each open timestamp must align to the UTC interval boundary; the system does not sort, shift or repair bad provider data.
 - No currently open candle is passed to indicators or backtests.
 - Provider timestamps and candle close timestamps are distinct: `fetchedAt` records when NEXUS retrieved the snapshot; each candle timestamp identifies its open time.
 - Cross-provider prices are not blindly merged. Different venues have different liquidity, volume conventions, pair availability and market microstructure.
