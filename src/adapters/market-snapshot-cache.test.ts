@@ -6,7 +6,7 @@ function memoryIndexedDb(): IDBFactory {
   const stores = new Map<string, Map<string, unknown>>();
   const database = {
     objectStoreNames: { contains: (name: string) => stores.has(name) },
-    createObjectStore: (name: string) => { stores.set(name, new Map()); return {}; },
+    createObjectStore: (name: string) => { stores.set(name, new Map()); return { createIndex: () => undefined }; },
     transaction: (name: string) => {
       const store = stores.get(name);
       if (!store) throw new Error("Missing object store");
