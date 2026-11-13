@@ -145,13 +145,15 @@ export async function fetchBinanceHistory(
   let cursor = request.startTime;
   while (cursor <= request.endTime && history.length < maxCandles) {
     const remaining = maxCandles - history.length;
-    const page = await fetchBinanceCandles({
+    const requestedLimit = Math.min(pageLimit, remaining);
+    const responsePage = await fetchBinanceCandles({
       symbol: request.symbol,
       interval: request.interval,
       startTime: cursor,
       endTime: request.endTime,
-      limit: Math.min(pageLimit, remaining),
+      limit: requestedLimit,
     }, fetcher, now);
+    const page = responsePage.slice(0, requestedLimit);
     if (page.length === 0) break;
 
     const previous = history[history.length - 1];
@@ -166,7 +168,7 @@ export async function fetchBinanceHistory(
       throw new Error("Binance history pagination did not advance");
     }
     cursor = nextCursor;
-    if (page.length < Math.min(pageLimit, remaining)) break;
+    if (page.length < requestedLimit) break;
   }
 
   return validateCandles(history);
