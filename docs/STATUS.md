@@ -97,3 +97,12 @@ Updated: 2026-11-14
 - Full Vitest suite and production build remain unverified while GitHub Actions jobs fail before runner allocation.
 
 - Walk-forward follow-up: added a regression check rejecting `stepBars < testBars`; overlapping out-of-sample windows would otherwise reuse test observations and overstate the number of independent evaluation windows. Local strict TypeScript compile passed and the updated deterministic harness passed 13 assertions.
+
+## Walk-forward backtest integration
+
+- Added `evaluateWalkForward`: each fold's strategy factory receives training candles only, then its returned evaluator is run against that fold's subsequent test candles using the existing next-open-fill backtester, fees, slippage and position sizing.
+- Reports per-fold results plus mean fold return, sequentially compounded fold return, worst fold drawdown, completed trade count, total fees and trade-weighted win rate.
+- Added 3 Vitest specifications for training/test separation, aggregate metrics and invalid strategy factories.
+- Local strict TypeScript compilation passed for candles, backtest, fold generation and evaluation modules. A deterministic Node integration harness passed 10 assertions.
+- The evaluation uses independent capital resets per test fold; compounded return is a summary, not a continuous pooled-account simulation. It remains long-only spot and does not model funding, borrow, partial fills, market impact, or cross-asset concurrency.
+- GitHub Actions remains blocked before runner allocation. No hosted Vitest run, production build or deployment is claimed.
