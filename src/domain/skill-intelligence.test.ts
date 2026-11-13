@@ -4,7 +4,7 @@ import { approveSkill, assessSkill, createSkillRecord, type SkillInput } from ".
 const input: SkillInput = {
   id: "skill-ta-001", name: "Technical analysis patterns", description: "Reusable indicator and signal research patterns.",
   repositoryUrl: "https://github.com/example/ta-patterns", version: "1.0.0", license: "MIT",
-  lastCommitAt: 1_760_000_000_000, stars: 120, openIssues: 3,
+  lastCommitAt: 1_790_000_000_000, stars: 120, openIssues: 3,
   capabilities: ["indicator-research", "backtesting"], hasTests: true, hasDocumentation: true,
   securityReviewed: false, provenance: "GitHub repository metadata checked 2026-11-14",
   discoveredAt: 1_792_000_000_000,
