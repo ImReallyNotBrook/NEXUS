@@ -8,6 +8,7 @@ function proposal(overrides: Partial<SkillProposal> = {}): SkillProposal {
     baseVersion: "1.2.0",
     proposedVersion: "1.3.0",
     changeType: "knowledge",
+    changedFiles: ["skills/knowledge/market-regimes.md"],
     title: "Add regime classification evidence",
     summary: "Add a documented volatility-regime diagnostic.",
     evidence: [{ source: "https://example.org/research", note: "Primary methodology reference" }],
@@ -28,6 +29,13 @@ describe("assessSkillProposal", () => {
     expect(result.valid).toBe(true);
     expect(result.autoPromotable).toBe(true);
     expect(result.requiresHumanApproval).toBe(false);
+  });
+
+  it("does not trust a knowledge label when the changed files are outside the knowledge-only directory", () => {
+    const result = assessSkillProposal(proposal({ changedFiles: ["AGENTS.md"] }));
+    expect(result.valid).toBe(true);
+    expect(result.autoPromotable).toBe(false);
+    expect(result.requiresHumanApproval).toBe(true);
   });
 
   it("requires explicit human approval for methodology, risk, policy and execution changes", () => {
