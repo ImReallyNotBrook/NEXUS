@@ -36,10 +36,11 @@ Updated: 2026-11-14
 - CI runner availability must be resolved before relying on automated GitHub verification.
 
 ## Next implementation tasks
-1. Resolve GitHub Actions runner allocation and run the full Vitest/build pipeline.
+1. Resolve CI execution without enabling paid billing, then run the complete Vitest/build pipeline.
 2. Expose historical backfill and candle-history inspection in the mobile dashboard, with bounded progress and resumable requests.
-3. Add spread, partial-fill and market-impact execution models; add parameter-search trial accounting and a final untouched holdout.
-4. Build the research evidence ledger and hybrid skill-proposal workflow, keeping policy and risk changes behind human approval.
+3. Build the strategy library and connect walk-forward evaluation/scorecard to reproducible strategy experiments.
+4. Add spread, partial-fill and market-impact execution models, parameter-search trial accounting and a final untouched holdout.
+5. Persist the research evidence and skill-proposal ledger; keep automatic promotion disabled until trusted evaluation is available.
 
 ## Paper trading increment
 
@@ -63,7 +64,7 @@ Updated: 2026-11-14
 
 - Added a provider-neutral market snapshot contract and ordered provider resolver with strict shared OHLCV validation.
 - Added independent public Kraken hourly OHLC fallback for BTC/USD and BTC/USDT. The current uncommitted Kraken row is excluded; unsupported pairs/intervals fail closed.
-- Added version-2 IndexedDB market snapshot cache, keyed by symbol and interval, sharing the paper-account database.
+- Added the IndexedDB market snapshot cache, keyed by symbol and interval, sharing the paper-account database. The shared schema has since been upgraded to version 3 and also stores historical candles.
 - Resolver uses cache only after all providers fail, rejects cache entries older than 24 hours or with future timestamps, and marks cache fallback stale. The dashboard identifies the source and blocks paper orders for stale data.
 - Local strict TypeScript compilation passed for the provider resolver, Kraken adapter and IndexedDB cache. Local deterministic harness passed 4 resolver assertions, 3 Kraken adapter assertions and 4 IndexedDB cache assertions.
 - Added 5 market resolver, 4 Kraken adapter and 2 cache Vitest specifications. The repository Vitest suite and production build remain unverified because GitHub-hosted runner allocation has been failing before steps execute.
