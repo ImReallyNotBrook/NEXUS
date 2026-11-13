@@ -72,9 +72,9 @@ Updated: 2026-11-14
 
 ## Market data quality increment
 
-- Added snapshot quality diagnostics for invalid OHLCV, empty feeds, missing hourly intervals, invalid/future/stale fetch timestamps, and zero-volume warnings. Gaps and stale/invalid snapshots fail the quality gate; zero-volume candles warn without being rewritten.
+- Added snapshot quality diagnostics for invalid OHLCV, empty feeds, missing hourly intervals, invalid/future/stale fetch timestamps, incomplete latest candles, stale last-completed candles and zero-volume warnings. Gaps and stale/invalid snapshots fail the quality gate; zero-volume candles warn without being rewritten.
 - Added timestamp-aligned Binance/Kraken close-price comparison using symmetric midpoint basis-point deviation. Feeds are never merged or averaged; deviations above 50 bps are flagged.
 - Paper orders now require a quality-passing snapshot and a successful within-tolerance cross-provider check. A missing secondary feed, insufficient timestamp overlap, stale cache, candle gap or >50 bps discrepancy blocks orders.
 - Provider resolution now enforces a configurable minimum candle count and fails over when a source returns insufficient history. The BTC dashboard requires at least 15 candles before accepting a provider response.
-- Added 9 Vitest specifications for market-data quality/comparison and one resolver test for minimum-history failover. Local strict TypeScript compilation passed for the quality module; a deterministic Node harness passed 9 quality/comparison assertions.
+- Added 11 Vitest specifications for market-data quality/comparison and one resolver test for minimum-history failover. Local strict TypeScript compilation passed for the quality module; deterministic Node harnesses passed 11 quality/comparison assertions and 2 minimum-history resolver assertions.
 - The Vitest suite and production build remain unverified. GitHub Actions runner allocation and Android browser/device integration are still outstanding; no live endpoint or deployment success is claimed.
