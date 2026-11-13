@@ -37,6 +37,13 @@ describe("compareResearchRuns", () => {
     expect(compareResearchRuns(report("same", 4), otherMarket).reasons).toContain("Market symbol, interval or provider differs");
   });
 
+  it("refuses to certify legacy reports without market provenance", () => {
+    const first = report("same", 4);
+    const second = report("same", 7);
+    delete second.dataset.metadata;
+    expect(compareResearchRuns(first, second).comparable).toBe(false);
+  });
+
   it("reports only candidates present in both experiments", () => {
     const first = report("same", 4);
     const second = report("same", 5);
