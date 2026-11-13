@@ -1,9 +1,9 @@
 import type { PaperAccount } from "../domain/paper-broker";
 
 const DATABASE_NAME = "nexus-local";
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 const ACCOUNT_STORE = "paperAccounts";
-const DEFAULT_ACCOUNT_ID = "default";
+const DEFAULT_ACCOUNT_ID = "default";\nconst CANDLE_STORE = "marketSnapshots";
 
 interface StoredPaperAccount {
   id: string;
@@ -42,6 +42,9 @@ export class PaperAccountStore {
         const database = request.result;
         if (!database.objectStoreNames.contains(ACCOUNT_STORE)) {
           database.createObjectStore(ACCOUNT_STORE, { keyPath: "id" });
+        }
+        if (!database.objectStoreNames.contains(CANDLE_STORE)) {
+          database.createObjectStore(CANDLE_STORE, { keyPath: "key" });
         }
       };
       request.onsuccess = () => resolve(request.result);
