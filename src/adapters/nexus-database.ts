@@ -1,0 +1,30 @@
+export const NEXUS_DATABASE_NAME = "nexus-local";
+export const NEXUS_DATABASE_VERSION = 2;
+export const PAPER_ACCOUNT_STORE = "paperAccounts";
+export const MARKET_SNAPSHOT_STORE = "marketSnapshots";
+
+/**
+ * One schema owner for every local adapter. A single versioned upgrade creates
+ * all stores, preventing adapters from opening incompatible DB versions.
+ */
+export function openNexusDatabase(factory: IDBFactory = indexedDB): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = factory.open(NEXUS_DATABASE_NAME, NEXUS_DATABASE_VERSION);
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(PAPER_ACCOUNT_STORE)) {
+        database.createObjectStore(PAPER_ACCOUNT_STORE, { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains(MARKET_SNAPSHOT_STORE)) {
+        database.createObjectStore(MARKET_SNAPSHOT_STORE, { keyPath: "key" });
+      }
+    };
+    request.onsuccess = () => {
+      const database = request.result;
+      database.onversionchange = () => database.close();
+      resolve(database);
+    };
+    request.onerror = () => reject(request.error ?? new Error("Could not open NEXUS local database"));
+    request.onblocked = () => reject(new Error("NEXUS database upgrade is blocked by another open tab"));
+  });
+}
