@@ -14,7 +14,7 @@ Updated: 2026-11-14
 - Dashboard BTC/USDT public market snapshot with RSI(14) and manual refresh.
 - Deterministic long-only spot backtest engine with next-bar-open fills, configurable fees, adverse slippage, allocation sizing, trade ledger and marked-to-market equity curve.
 - Qualification result only grants review eligibility; live execution is hard-coded false.
-- Unit tests added for thresholds and invalid evidence.
+- Vitest specifications added for qualification, OHLCV validation, indicators, public adapter and backtest scenarios.
 - PWA manifest, icon and static-shell service worker added.
 - GitHub Actions workflow configured for tests and production build.
 
