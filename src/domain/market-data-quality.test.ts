@@ -10,14 +10,14 @@ const candles: Candle[] = [
   { timestamp: base + 7_200_000, open: 102, high: 104, low: 101, close: 103, volume: 11 },
 ];
 
-function snapshot(provider: string, rows: Candle[], fetchedAt = base + 7_200_000): MarketSnapshot {
+function snapshot(provider: string, rows: Candle[], fetchedAt = base + 10_800_000): MarketSnapshot {
   return { symbol: "BTCUSDT", interval: "1h", provider, fetchedAt, stale: false, candles: rows };
 }
 
 describe("validateSnapshotQuality", () => {
   it("passes a complete, fresh hourly snapshot", () => {
     const result = validateSnapshotQuality(snapshot("Binance", candles), {
-      now: base + 7_300_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+      now: base + 10_900_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     expect(result.status).toBe("pass");
     expect(result.issues).toHaveLength(0);
@@ -42,13 +42,30 @@ describe("validateSnapshotQuality", () => {
 
   it("fails snapshots that are stale or timestamped in the future", () => {
     const stale = validateSnapshotQuality(snapshot("Binance", candles, base), {
-      now: base + 1_000_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+      now: base + 11_900_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     const future = validateSnapshotQuality(snapshot("Binance", candles, base + 9_000_000), {
       now: base + 7_300_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     expect(stale.status).toBe("fail");
     expect(future.issues.some((issue) => issue.code === "FUTURE_SNAPSHOT")).toBe(true);
+  });
+
+
+  it("fails when the latest candle has not closed yet", () => {
+    const result = validateSnapshotQuality(snapshot("Binance", candles, base + 10_600_000), {
+      now: base + 10_700_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+    });
+    expect(result.status).toBe("fail");
+    expect(result.issues.some((issue) => issue.code === "INCOMPLETE_LAST_CANDLE")).toBe(true);
+  });
+
+  it("fails when the latest completed candle is too old even if the fetch is recent", () => {
+    const result = validateSnapshotQuality(snapshot("Binance", candles, base + 19_900_000), {
+      now: base + 20_000_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+    });
+    expect(result.status).toBe("fail");
+    expect(result.issues.some((issue) => issue.code === "LAST_CANDLE_STALE")).toBe(true);
   });
 
   it("fails malformed candle sequences using the shared candle validator", () => {
