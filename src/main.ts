@@ -1,7 +1,10 @@
 import "./style.css";
 import { evaluateQualification } from "./domain/qualification";
 import { rsi } from "./domain/indicators";
-import { fetchBinanceCandles } from "./adapters/binance-public";
+import { fetchBinanceCandles, type BinanceInterval } from "./adapters/binance-public";
+import { fetchKrakenCandles } from "./adapters/kraken-public";
+import { IndexedDbMarketSnapshotCache } from "./adapters/market-snapshot-cache";
+import { resolveMarketSnapshot, type MarketDataProvider } from "./domain/market-data";
 import { PaperAccountStore } from "./adapters/paper-account-store";
 import {
   createPaperAccount, executePaperMarketOrder, getPaperAccountSummary, markPaperAccount,
@@ -82,6 +85,19 @@ const paperQuantityInput = document.querySelector<HTMLInputElement>("#paper-quan
 const paperBuyButton = document.querySelector<HTMLButtonElement>("#paper-buy");
 const paperSellButton = document.querySelector<HTMLButtonElement>("#paper-sell");
 const paperStore = new PaperAccountStore();
+const marketCache = new IndexedDbMarketSnapshotCache();
+const marketProviders: MarketDataProvider[] = [
+  {
+    name: "Binance public spot",
+    fetchCandles: ({ symbol, interval, limit }) =>
+      fetchBinanceCandles({ symbol, interval: interval as BinanceInterval, limit }),
+  },
+  {
+    name: "Kraken public spot",
+    fetchCandles: ({ symbol, interval }) =>
+      fetchKrakenCandles({ symbol, interval: interval as "1h" }),
+  },
+];
 let paperAccount: PaperAccount | null = null;
 let latestBtcPrice: number | null = null;
 let latestBtcFetchedAt: number | null = null;
@@ -160,7 +176,10 @@ async function loadMarketSnapshot(): Promise<void> {
   latestBtcFetchedAt = null;
   renderPaperAccount();
   try {
-    const candles = await fetchBinanceCandles({ symbol: "BTCUSDT", interval: "1h", limit: 25 });
+    const snapshot = await resolveMarketSnapshot(marketProviders, marketCache, {
+      symbol: "BTCUSDT", interval: "1h", limit: 25, maxCacheAgeMs: 24 * 60 * 60 * 1000,
+    });
+    const candles = snapshot.candles;
     if (candles.length < 15) throw new Error("Not enough completed candles to calculate RSI");
     const firstClose = candles[0].close;
     if (firstClose <= 0) throw new Error("Invalid reference price in market data");
@@ -169,7 +188,7 @@ async function loadMarketSnapshot(): Promise<void> {
     const rsiValues = rsi(candles.map((candle) => candle.close), 14);
     const latestRsi = rsiValues[rsiValues.length - 1];
     latestBtcPrice = last.close;
-    latestBtcFetchedAt = Date.now();
+    latestBtcFetchedAt = snapshot.stale ? 0 : Date.now();
     if (paperAccount) {
       paperAccount = markPaperAccount(paperAccount, { BTCUSDT: last.close }, Date.now());
       await paperStore.save(paperAccount);
@@ -179,10 +198,12 @@ async function loadMarketSnapshot(): Promise<void> {
     priceElement.textContent = new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 2, maximumFractionDigits: 2,
     }).format(last.close) + " USDT";
-    changeElement.textContent = (change >= 0 ? "+" : "") + change.toFixed(2) + "% over 24 hourly intervals";
+    changeElement.textContent = (change >= 0 ? "+" : "") + change.toFixed(2) + "% over 24 hourly intervals" +
+      (snapshot.stale ? " · paper orders locked" : "");
     changeElement.dataset.direction = change >= 0 ? "up" : "down";
     rsiElement.textContent = latestRsi === null ? "—" : latestRsi.toFixed(1);
-    updatedElement.textContent = "Last closed candle · " + new Date(last.timestamp).toLocaleString();
+    updatedElement.textContent = (snapshot.stale ? "STALE LOCAL CACHE · " : snapshot.provider + " · ") +
+      "Last closed candle · " + new Date(last.timestamp).toLocaleString();
   } catch (error) {
     latestBtcPrice = null;
     latestBtcFetchedAt = null;
