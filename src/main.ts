@@ -83,7 +83,7 @@ const paperBuyButton = document.querySelector<HTMLButtonElement>("#paper-buy");
 const paperSellButton = document.querySelector<HTMLButtonElement>("#paper-sell");
 const paperStore = new PaperAccountStore();
 let paperAccount: PaperAccount | null = null;
-let latestBtcPrice: number | null = null;
+let latestBtcPrice: number | null = null;\nlet latestBtcFetchedAt: number | null = null;
 let paperOrderInFlight = false;
 
 function renderPaperAccount(): void {
@@ -99,7 +99,7 @@ function renderPaperAccount(): void {
       ? recent.map((fill) => `${fill.side.toUpperCase()} ${fill.quantity} BTC · ${fill.price.toFixed(2)} · fee ${fill.fee.toFixed(2)} USDT`).join("\n")
       : "No paper fills yet";
   }
-  const canTrade = latestBtcPrice !== null;
+  const canTrade = latestBtcPrice !== null && latestBtcFetchedAt !== null && Date.now() - latestBtcFetchedAt <= 5 * 60 * 1000;
   if (paperBuyButton) paperBuyButton.disabled = !canTrade || paperOrderInFlight;
   if (paperSellButton) paperSellButton.disabled = !canTrade || paperOrderInFlight || !paperAccount.positions.BTCUSDT;
 }
@@ -119,6 +119,12 @@ async function initializePaperAccount(): Promise<void> {
 
 async function submitPaperOrder(side: "buy" | "sell"): Promise<void> {
   if (!paperAccount || latestBtcPrice === null || !paperQuantityInput || !paperStatusElement) return;
+  if (latestBtcFetchedAt === null || Date.now() - latestBtcFetchedAt > 5 * 60 * 1000) {
+    latestBtcPrice = null;
+    renderPaperAccount();
+    paperStatusElement.textContent = "Market snapshot expired; refresh before trading";
+    return;
+  }
   if (paperOrderInFlight) return;
   paperOrderInFlight = true;
   renderPaperAccount();
@@ -149,6 +155,9 @@ async function loadMarketSnapshot(): Promise<void> {
   refreshButton.disabled = true;
   refreshButton.textContent = "Loading…";
   changeElement.textContent = "Fetching latest completed hourly candles";
+  latestBtcPrice = null;
+  latestBtcFetchedAt = null;
+  renderPaperAccount();
   try {
     const candles = await fetchBinanceCandles({ symbol: "BTCUSDT", interval: "1h", limit: 25 });
     if (candles.length < 15) throw new Error("Not enough completed candles to calculate RSI");
@@ -159,6 +168,7 @@ async function loadMarketSnapshot(): Promise<void> {
     const rsiValues = rsi(candles.map((candle) => candle.close), 14);
     const latestRsi = rsiValues[rsiValues.length - 1];
     latestBtcPrice = last.close;
+    latestBtcFetchedAt = Date.now();
     if (paperAccount) {
       paperAccount = markPaperAccount(paperAccount, { BTCUSDT: last.close }, Date.now());
       await paperStore.save(paperAccount);
@@ -173,6 +183,9 @@ async function loadMarketSnapshot(): Promise<void> {
     rsiElement.textContent = latestRsi === null ? "—" : latestRsi.toFixed(1);
     updatedElement.textContent = "Last closed candle · " + new Date(last.timestamp).toLocaleString();
   } catch (error) {
+    latestBtcPrice = null;
+    latestBtcFetchedAt = null;
+    renderPaperAccount();
     changeElement.textContent = error instanceof Error ? error.message : "Market data unavailable";
     changeElement.dataset.direction = "neutral";
     rsiElement.textContent = "—";
