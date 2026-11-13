@@ -37,6 +37,32 @@ describe("paper broker", () => {
     })).toThrow(/insufficient cash/i);
   });
 
+  it("enforces the allocation cap across repeated buys in one symbol", () => {
+    const account = createPaperAccount({ maxPositionValueFraction: 0.25 });
+    const first = executePaperMarketOrder(account, {
+      symbol: "BTCUSDT", side: "buy", quantity: 0.04, referencePrice: 50_000,
+      timestamp: Date.UTC(2026, 0, 1),
+    });
+    expect(() => executePaperMarketOrder(first, {
+      symbol: "BTCUSDT", side: "buy", quantity: 0.02, referencePrice: 50_000,
+      timestamp: Date.UTC(2026, 0, 1, 1),
+    })).toThrow(/allocation limit/i);
+  });
+
+  it("allows risk-reducing sells after the daily loss limit is breached", () => {
+    const account = createPaperAccount({ maxDailyLossFraction: 0.02, maxPositionValueFraction: 0.9 });
+    const bought = executePaperMarketOrder(account, {
+      symbol: "BTCUSDT", side: "buy", quantity: 0.1, referencePrice: 50_000,
+      timestamp: Date.UTC(2026, 0, 1),
+    });
+    const stressed = markPaperAccount(bought, { BTCUSDT: 39_000 }, Date.UTC(2026, 0, 1, 2));
+    const exited = executePaperMarketOrder(stressed, {
+      symbol: "BTCUSDT", side: "sell", quantity: 0.1, referencePrice: 39_000,
+      timestamp: Date.UTC(2026, 0, 1, 3),
+    });
+    expect(exited.positions.BTCUSDT).toBeUndefined();
+  });
+
   it("rejects sells larger than the open position", () => {
     const account = createPaperAccount();
     expect(() => executePaperMarketOrder(account, {
