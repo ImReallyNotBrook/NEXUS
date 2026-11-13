@@ -214,3 +214,12 @@ Updated: 2026-11-14
 - Comparisons are certified as apples-to-apples only when dataset fingerprint, candle count, timestamp bounds, market symbol, interval, provider and complete walk-forward/execution configuration match. Legacy reports without market provenance fail closed.
 - Research reports now record market symbol, interval and public data provider in their dataset metadata. The fingerprint remains a non-cryptographic FNV-1a identifier and is not proof of data authenticity.
 - Added 4 comparison specifications including market mismatch and missing-provenance rejection. These tests are committed but not run because the dependency-installed test environment is unavailable.
+
+
+## Evidence-led research agent foundation
+
+- Added a typed hypothesis model that requires a falsifiable question, rationale, target strategy, explicit experimental variables, a primary metric, guardrail metrics and source-backed claims.
+- Evidence provenance supports experiment, paper, documentation, code, exchange-data, community and opinion. Opinions are retained but do not count toward readiness; at least two distinct non-opinion evidence types are required before a hypothesis is marked ready for experiment design. This is a provenance floor, not automated source validation.
+- Hypotheses encode mandatory same-data control/candidate comparison, walk-forward testing, fees/slippage, untouched final holdout and no automatic promotion.
+- Added an append-only local IndexedDB hypothesis ledger and schema version 6; added domain and storage test specifications. Tests remain unexecuted due unavailable CI runner.
+- No autonomous web research, LLM inference, GitHub skill installation or automatic experiment execution is connected. The dashboard does not yet expose hypothesis creation. No paid APIs or credentials are used.
