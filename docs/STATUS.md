@@ -36,10 +36,10 @@ Updated: 2026-11-14
 - CI runner availability must be resolved before relying on automated GitHub verification.
 
 ## Next implementation tasks
-1. Resolve GitHub Actions runner execution and run the full Vitest/build pipeline.
-2. Add historical candle pagination/backfill with provider-specific rate and retention limits.
-3. Add spread, partial-fill and market-impact models plus out-of-sample backtest reporting.
-4. Add automated data-quality monitoring and a visible feed-health history.
+1. Resolve GitHub Actions runner allocation and run the full Vitest/build pipeline.
+2. Expose historical backfill and candle-history inspection in the mobile dashboard, with bounded progress and resumable requests.
+3. Add spread, partial-fill and market-impact execution models; add parameter-search trial accounting and a final untouched holdout.
+4. Build the research evidence ledger and hybrid skill-proposal workflow, keeping policy and risk changes behind human approval.
 
 ## Paper trading increment
 
@@ -124,3 +124,5 @@ Updated: 2026-11-14
 - Added a warm-up isolation test and 2 walk-forward runner specifications. Local strict TypeScript compile passed for backtest and walk-forward modules; deterministic harness passed warm-up isolation and 3 independent OOS fold scenarios.
 - This is an evaluation framework, not an optimizer. Strategy selection and parameter search, multiple-testing accounting, and an untouched final holdout remain future work; walk-forward alone does not eliminate overfitting or regime shift.
 - Full Vitest/build and hosted browser verification remain unverified because GitHub Actions still fails before runner allocation.
+
+- Additional local verification after the warm-up edge-case fix: strict TypeScript compilation passed; deterministic walk-forward harness passed warm-up isolation, invalid empty-dataset warm-up rejection and three independent out-of-sample folds.
