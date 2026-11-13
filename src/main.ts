@@ -83,7 +83,8 @@ const paperBuyButton = document.querySelector<HTMLButtonElement>("#paper-buy");
 const paperSellButton = document.querySelector<HTMLButtonElement>("#paper-sell");
 const paperStore = new PaperAccountStore();
 let paperAccount: PaperAccount | null = null;
-let latestBtcPrice: number | null = null;\nlet latestBtcFetchedAt: number | null = null;
+let latestBtcPrice: number | null = null;
+let latestBtcFetchedAt: number | null = null;
 let paperOrderInFlight = false;
 
 function renderPaperAccount(): void {
