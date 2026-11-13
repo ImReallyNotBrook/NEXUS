@@ -26,7 +26,8 @@ export interface PaperFill {
 }
 
 export interface PaperAccount {
-  readonly initialCash: number;\n  readonly config: Readonly<PaperBrokerConfig>;
+  readonly initialCash: number;
+  readonly config: Readonly<PaperBrokerConfig>;
   readonly cash: number;
   readonly realizedPnl: number;
   readonly totalFees: number;
@@ -81,6 +82,7 @@ export function createPaperAccount(overrides: Partial<PaperBrokerConfig> = {}, t
   validateConfig(config);
   return {
     initialCash: config.initialCash,
+    config: Object.freeze({ ...config }),
     cash: config.initialCash,
     realizedPnl: 0,
     totalFees: 0,
