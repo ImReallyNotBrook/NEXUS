@@ -2,7 +2,8 @@ import { fetchBinanceHistory, type BinanceInterval } from "../adapters/binance-p
 import type { Candle } from "./candles";
 import { runResearchBatch, type ResearchBatchResult, type ResearchPipelineConfig } from "./research-pipeline";
 import { createBaselineResearchCandidates } from "../strategies/baseline-research-candidates";
-import { ResearchRunStore } from "../adapters/research-run-store";
+import { ResearchRunStore, type StoredResearchRun } from "../adapters/research-run-store";
+import { compareResearchRuns } from "./research-comparison";
 
 const INTERVAL_MS: Partial<Record<BinanceInterval, number>> = {
   "1m": 60_000, "3m": 180_000, "5m": 300_000, "15m": 900_000,
@@ -172,7 +173,7 @@ export function mountResearchConsole(container: HTMLElement): void {
       </form>
       <p id="research-status" class="paper-status" role="status">Ready · public Binance spot data · no API key required</p>
       <div id="research-results" aria-live="polite"></div>
-      <section class="saved-research"><h3>Saved experiment history</h3><p class="small">Stored only on this device. Clearing browser site data can erase these records.</p><div id="research-history" aria-live="polite">Loading saved experiments…</div></section>
+      <section class="saved-research"><h3>Saved experiment history</h3><p class="small">Stored only on this device. Clearing browser site data can erase these records.</p><div id="research-history" aria-live="polite">Loading saved experiments…</div><button id="compare-research" type="button" disabled>Compare selected experiments</button><div id="research-comparison" aria-live="polite"></div></section>
       <p class="small">Baseline parameters and regime thresholds are fixed research defaults, not optimized recommendations. Results are historical simulations, not evidence of future profitability.</p>
     </section>
   `;
@@ -182,12 +183,43 @@ export function mountResearchConsole(container: HTMLElement): void {
   const status = container.querySelector<HTMLElement>("#research-status");
   const results = container.querySelector<HTMLElement>("#research-results");
   const history = container.querySelector<HTMLElement>("#research-history");
-  if (!form || !button || !status || !results || !history) return;
+  const compareButton = container.querySelector<HTMLButtonElement>("#compare-research");
+  const comparisonTarget = container.querySelector<HTMLElement>("#research-comparison");
+  if (!form || !button || !status || !results || !history || !compareButton || !comparisonTarget) return;
   const runStore = new ResearchRunStore();
+  const selectedRunIds = new Set<string>();
+  let cachedRuns: StoredResearchRun[] = [];
+
+  const updateCompareButton = (): void => {
+    compareButton.disabled = selectedRunIds.size !== 2;
+    compareButton.textContent = selectedRunIds.size === 2 ? "Compare selected experiments" : "Select 2 experiments to compare";
+  };
+  compareButton.addEventListener("click", () => {
+    if (selectedRunIds.size !== 2) return;
+    const [firstId, secondId] = [...selectedRunIds];
+    const first = cachedRuns.find((record) => record.id === firstId);
+    const second = cachedRuns.find((record) => record.id === secondId);
+    if (!first || !second) return;
+    const comparison = compareResearchRuns(first.report, second.report);
+    comparisonTarget.replaceChildren();
+    const panel = el("div", "research-result");
+    panel.append(el("h4", "", "Experiment comparison"));
+    if (!comparison.comparable) {
+      panel.append(el("p", "small", "NOT APPLES-TO-APPLES · " + comparison.reasons.join(" · ")));
+    } else {
+      panel.append(el("p", "small", "Matched dataset fingerprint, candle range, walk-forward folds and execution assumptions."));
+    }
+    if (comparison.candidateDeltas.length === 0) panel.append(el("p", "small", "No matching strategy IDs across these runs."));
+    for (const delta of comparison.candidateDeltas) {
+      panel.append(el("p", "small", delta.name + " · OOS return delta " + delta.returnDeltaPct.toFixed(2) + " pp · worst drawdown delta " + (delta.worstFoldDrawdownDeltaPct?.toFixed(2) ?? "—") + " pp · trade delta " + delta.tradeCountDelta));
+    }
+    comparisonTarget.append(panel);
+  });
 
   const refreshHistory = async (): Promise<void> => {
     try {
       const records = await runStore.list(50);
+      cachedRuns = records;
       history.replaceChildren();
       if (records.length === 0) {
         history.append(el("p", "small", "No saved experiments yet."));
@@ -196,6 +228,21 @@ export function mountResearchConsole(container: HTMLElement): void {
       for (const record of records) {
         const item = el("div", "saved-run");
         const info = el("div", "saved-run-info");
+        const select = el("input", "saved-run-select");
+        select.type = "checkbox";
+        select.checked = selectedRunIds.has(record.id);
+        select.setAttribute("aria-label", "Select experiment for comparison");
+        select.addEventListener("change", () => {
+          if (select.checked) {
+            if (selectedRunIds.size >= 2) {
+              const oldestSelected = selectedRunIds.values().next().value as string | undefined;
+              if (oldestSelected) selectedRunIds.delete(oldestSelected);
+            }
+            selectedRunIds.add(record.id);
+          } else selectedRunIds.delete(record.id);
+          updateCompareButton();
+          refreshHistory();
+        });
         info.append(
           el("strong", "", record.report.config ? record.report.candidateResults.length + " strategies · " + record.report.dataset.candleCount.toLocaleString() + " candles" : "Saved experiment"),
           el("span", "small", new Date(record.createdAt).toLocaleString() + " · " + record.report.dataset.fingerprint),
@@ -214,9 +261,10 @@ export function mountResearchConsole(container: HTMLElement): void {
           });
         });
         actions.append(open, remove);
-        item.append(info, actions);
+        item.append(select, info, actions);
         history.append(item);
       }
+      updateCompareButton();
     } catch (error) {
       history.textContent = error instanceof Error ? error.message : "Saved experiment history unavailable";
     }
