@@ -95,7 +95,7 @@ function renderPaperAccount(): void {
   if (paperFillsElement) {
     const recent = [...paperAccount.fills].slice(-5).reverse();
     paperFillsElement.textContent = recent.length
-      ? recent.map((fill) => `${fill.side.toUpperCase()} ${fill.quantity} BTC · ${fill.price.toFixed(2)} · fee ${fill.fee.toFixed(2)} USDT`).join("\\n")
+      ? recent.map((fill) => `${fill.side.toUpperCase()} ${fill.quantity} BTC · ${fill.price.toFixed(2)} · fee ${fill.fee.toFixed(2)} USDT`).join("\n")
       : "No paper fills yet";
   }
   const canTrade = latestBtcPrice !== null;
