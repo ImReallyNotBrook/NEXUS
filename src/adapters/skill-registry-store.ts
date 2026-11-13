@@ -33,10 +33,12 @@ export class SkillRegistryStore {
 
   async register(skill: SkillRecord): Promise<void> {
     const isUnapproved = skill?.status === "quarantined" || skill?.status === "review-required";
-    const isApproved = skill?.status === "approved" && typeof skill.approvedBy === "string" &&
-      skill.approvedBy.trim().length >= 2 && typeof skill.approvalRationale === "string" &&
-      skill.approvalRationale.trim().length >= 10 && Number.isSafeInteger(skill.reviewedAt);
-    if (!skill || skill.executable !== false || (!isUnapproved && !isApproved) ||
+    const hasHumanReview = typeof skill?.approvalRationale === "string" &&
+      skill.approvalRationale.trim().length >= 10 && Number.isSafeInteger(skill.reviewedAt) &&
+      typeof skill.approvedBy === "string" && skill.approvedBy.trim().length >= 2;
+    const isApproved = skill?.status === "approved" && hasHumanReview;
+    const isRejected = skill?.status === "rejected" && hasHumanReview;
+    if (!skill || skill.executable !== false || (!isUnapproved && !isApproved && !isRejected) ||
         (isUnapproved && (skill.approvedBy !== null || skill.reviewedAt !== null))) {
       throw new TypeError("Only valid, non-executable skill review records can be registered");
     }
