@@ -106,3 +106,12 @@ Updated: 2026-11-14
 - Local strict TypeScript compilation passed for candles, backtest, fold generation and evaluation modules. A deterministic Node integration harness passed 10 assertions.
 - The evaluation uses independent capital resets per test fold; compounded return is a summary, not a continuous pooled-account simulation. It remains long-only spot and does not model funding, borrow, partial fills, market impact, or cross-asset concurrency.
 - GitHub Actions remains blocked before runner allocation. No hosted Vitest run, production build or deployment is claimed.
+
+## Historical market-data storage increment
+
+- Added bounded sequential Binance historical pagination using start/end timestamps, fixed-duration interval cursors, duplicate/non-progress protection and a hard per-call candle budget. Calendar-month pagination is excluded because month lengths vary; HTTP/rate-limit failures surface without retry loops.
+- Added a dedicated IndexedDB historical candle store partitioned by symbol, interval and provider, with indexed series reads, timestamp upserts and inclusive time-range filtering.
+- Upgraded the single shared IndexedDB schema to version 3, creating paper accounts, latest market snapshots and historical candles together.
+- Added 4 Binance history pagination specifications, 4 candle-history store specifications and expanded shared-schema tests.
+- Local verification: strict TypeScript compile passed for the shared database, paper-account store, market-snapshot cache and candle-history store. Deterministic Node harnesses passed 4 backfill scenarios and candle-history append/range/series-isolation checks.
+- The backfill and storage functions are not yet exposed in a dashboard workflow. Full Vitest, Vite build, and real browser IndexedDB testing remain blocked/unverified.
