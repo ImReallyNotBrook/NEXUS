@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createPaperAccount, executePaperMarketOrder, markPaperAccount } from "./paper-broker";
 
-describe("paper broker", () => {\n  const timestamp = Date.UTC(2026, 0, 1);
+describe("paper broker", () => {
+  const timestamp = Date.UTC(2026, 0, 1);
   it("starts with an isolated 10,000 USDT simulated account", () => {
     const account = createPaperAccount({}, timestamp);
     expect(account.cash).toBe(10_000);
