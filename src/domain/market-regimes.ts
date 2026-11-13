@@ -128,7 +128,7 @@ export function buildRegimeScorecard(
   config: MarketRegimeConfig,
 ): RegimeScorecard {
   const regimes = classifyMarketRegimes(candles, config);
-  const byTimestamp = new Map(regimes.map((regime) => [regime.timestamp, regime]));
+  const indexByTimestamp = new Map(regimes.map((regime, index) => [regime.timestamp, index]));
   const trendLabels = ["uptrend", "downtrend", "range"] as const;
   const volatilityLabels = ["low", "normal", "high"] as const;
   const buckets = new Map<string, { trend: typeof trendLabels[number]; volatility: typeof volatilityLabels[number]; pnls: number[] }>();
@@ -144,8 +144,8 @@ export function buildRegimeScorecard(
   for (const fold of evaluation.folds) {
     for (const trade of fold.result.trades) {
       if (!Number.isFinite(trade.pnl)) throw new TypeError("Trade PnL must be finite");
-      const exitIndex = regimes.findIndex((item) => item.timestamp === trade.exitTimestamp);
-      if (exitIndex < 0) throw new RangeError("Trade exit timestamp is missing from supplied candles");
+      const exitIndex = indexByTimestamp.get(trade.exitTimestamp);
+      if (exitIndex === undefined) throw new RangeError("Trade exit timestamp is missing from supplied candles");
       const decisionRegime = exitIndex > 0 ? regimes[exitIndex - 1] : undefined;
       if (!decisionRegime || decisionRegime.trend === "unknown" || decisionRegime.volatility === "unknown") {
         unclassifiedTrades += 1;
