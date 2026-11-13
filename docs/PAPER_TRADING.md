@@ -17,6 +17,7 @@ The dashboard starts with a simulated balance of 10,000 USDT. The account is per
 - Default daily loss limit: 3% of start-of-UTC-day equity. When breached, new buys are blocked. Sells remain available to reduce risk.
 - Position cost basis includes entry fees. Realised P&L deducts the allocated entry cost and exit fee.
 - Only BTCUSDT can be traded from the current dashboard. The domain broker accepts exchange-style symbols for future extension.
+- The dashboard disables new orders while refreshing or after the market snapshot is more than five minutes old.
 
 These are simulation assumptions, not estimates of actual execution quality. The close is not a live bid/ask quote; the simulation does not yet model spread, depth, latency, partial fills, queue priority, market impact, exchange outages, or rejected exchange orders.
 
