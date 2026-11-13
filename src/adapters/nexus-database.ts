@@ -1,7 +1,8 @@
 export const NEXUS_DATABASE_NAME = "nexus-local";
-export const NEXUS_DATABASE_VERSION = 2;
+export const NEXUS_DATABASE_VERSION = 3;
 export const PAPER_ACCOUNT_STORE = "paperAccounts";
 export const MARKET_SNAPSHOT_STORE = "marketSnapshots";
+export const HISTORICAL_CANDLE_STORE = "historicalCandles";
 
 /**
  * One schema owner for every local adapter. A single versioned upgrade creates
@@ -17,6 +18,10 @@ export function openNexusDatabase(factory: IDBFactory = indexedDB): Promise<IDBD
       }
       if (!database.objectStoreNames.contains(MARKET_SNAPSHOT_STORE)) {
         database.createObjectStore(MARKET_SNAPSHOT_STORE, { keyPath: "key" });
+      }
+      if (!database.objectStoreNames.contains(HISTORICAL_CANDLE_STORE)) {
+        const historyStore = database.createObjectStore(HISTORICAL_CANDLE_STORE, { keyPath: "key" });
+        historyStore.createIndex("series", "series", { unique: false });
       }
     };
     request.onsuccess = () => {
