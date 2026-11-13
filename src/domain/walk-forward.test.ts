@@ -33,8 +33,9 @@ describe("buildWalkForwardFolds", () => {
     expect(folds[1].train[0].timestamp).toBeGreaterThan(folds[0].train[0].timestamp);
   });
 
-  it("rejects invalid sizes and datasets that cannot form a complete fold", () => {
+  it("rejects overlapping test windows, invalid sizes and datasets without a complete fold", () => {
     expect(() => buildWalkForwardFolds(candles, { trainBars: 0, testBars: 4 })).toThrow();
+    expect(() => buildWalkForwardFolds(candles, { trainBars: 6, testBars: 4, stepBars: 2 })).toThrow();
     expect(() => buildWalkForwardFolds(candles.slice(0, 5), { trainBars: 4, testBars: 4 })).toThrow();
   });
 
