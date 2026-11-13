@@ -25,6 +25,7 @@ export interface SkillRecord extends SkillInput {
   approvedBy: string | null;
   approvalRationale: string | null;
   reviewedAt: number | null;
+  rejectedBy?: string | null;
 }
 
 export interface SkillAssessment {
@@ -146,6 +147,7 @@ export function rejectSkill(
     status: "rejected" as const,
     executable: false as const,
     approvedBy: null,
+    rejectedBy: actor.trim(),
     approvalRationale: rationale.trim(),
     reviewedAt,
   });
