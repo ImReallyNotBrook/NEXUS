@@ -165,3 +165,14 @@ Updated: 2026-11-14
 - Added 4 Vitest specifications for crossover behavior, RSI threshold crossings, Donchian look-ahead protection and parameter validation.
 - Local strict TypeScript compilation passed for the strategy module; a deterministic harness passed SMA buy/sell, RSI buy/sell and Donchian breakout scenarios.
 - These are unoptimized research baselines. No strategy is auto-selected or connected to paper execution.
+
+
+## Reproducible multi-strategy research pipeline increment
+
+- Added `runResearchBatch`, which validates candidate identities and runs each candidate through identical chronological walk-forward folds, execution assumptions and regime configuration.
+- Each candidate receives a fresh factory invocation per training fold. The output includes the full walk-forward evaluation, aggregate scorecard and regime scorecard, plus dataset timestamp bounds and the shared experiment configuration.
+- Added a baseline candidate catalog for SMA crossover, Wilder RSI mean reversion and Donchian breakout. Parameter values are explicit and encoded into candidate IDs; evaluator state is recreated per fold.
+- Added 5 Vitest specifications covering candidate comparability, separate results, non-mutation, duplicate IDs and baseline catalog validation.
+- Added `docs/RESEARCH_PIPELINE.md` with architecture, controls and illustrative usage. The pipeline deliberately does not rank, optimize, auto-select, promote or execute strategies.
+- No curated historical experiment has been run yet. The example parameters are illustrative, not calibrated or evidence of an edge. Dashboard integration, final untouched holdout and expanded execution-cost modelling remain outstanding.
+- Full Vitest and production build remain unverified because GitHub Actions still fails before runner allocation; no billing or payment settings have been changed.
