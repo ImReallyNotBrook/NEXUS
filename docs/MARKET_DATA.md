@@ -37,7 +37,7 @@ The cache is device-local, not a cloud backup. Browser data clearing or eviction
 - Provider timestamps and candle close timestamps are distinct: `fetchedAt` records when NEXUS retrieved the snapshot; each candle timestamp identifies its open time.
 - Cross-provider prices are not blindly merged. Different venues have different liquidity, volume conventions, pair availability and market microstructure.
 - The quality gate checks candle ordering/OHLC validity, exact interval continuity, snapshot fetch-time validity and age, and the latest candle close boundary. An unclosed last candle fails; a last completed candle older than one full interval plus the freshness grace fails. Missing intervals fail; zero-volume candles warn but are not silently discarded.
-- Binance and Kraken hourly closes are compared only at identical candle timestamps. The dashboard flags deviations above 50 bps; it does not average or substitute prices.
+- Binance and Kraken hourly closes are compared only at identical candle timestamps, and both feeds must contain the same latest candle timestamp. Older overlap alone is insufficient. The dashboard flags deviations above 50 bps; it does not average or substitute prices.
 - Paper orders require a fresh quality-passing snapshot and a successful within-tolerance cross-provider comparison. A missing second feed, insufficient overlap or discrepancy blocks paper orders.
 - The dashboard still uses hourly snapshots and manual refresh. It is not a tick feed or a trading-grade execution quote.
 
