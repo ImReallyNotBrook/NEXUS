@@ -2,7 +2,7 @@ import { fetchBinanceHistory, type BinanceInterval } from "../adapters/binance-p
 import type { Candle } from "./candles";
 import { runResearchBatch, type ResearchBatchResult, type ResearchPipelineConfig } from "./research-pipeline";
 import { createBaselineResearchCandidates } from "../strategies/baseline-research-candidates";
-import { ResearchRunStore, type StoredResearchRun } from "../adapters/research-run-store";
+import { ResearchRunStore } from "../adapters/research-run-store";
 
 const INTERVAL_MS: Partial<Record<BinanceInterval, number>> = {
   "1m": 60_000, "3m": 180_000, "5m": 300_000, "15m": 900_000,
