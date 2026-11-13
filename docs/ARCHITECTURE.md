@@ -40,6 +40,10 @@ The evidence must be tied to an immutable strategy version and auditable trade l
 The first version should be deployable as static files using a genuinely free tier, without requiring a credit card or billing activation. Hosting provider selection is deferred until current limits and account requirements are verified. No paid backend or always-on compute in phase one.
 
 ## Current implementation status
-- Repository and policy baseline: established.
-- Qualification domain logic: first implementation task.
-- UI, market feeds, backtesting, paper broker and persistence: pending.
+- Repository, policy baseline, mobile-first PWA shell and qualification gate: implemented.
+- Public Binance and Kraken market-data adapters, normalized OHLCV validation, provider fallback, feed-quality checks and cross-provider comparison: implemented; live endpoint/device verification pending.
+- Local IndexedDB stores for paper accounts, latest snapshots and provider-specific historical candles: implemented with one versioned schema.
+- Deterministic long-only backtest, bounded Binance historical pagination, walk-forward folds and an out-of-sample fold runner: implemented; strategy optimisation and untouched final holdout remain pending.
+- BTC/USDT paper broker with fee/slippage and risk controls: implemented; no live execution adapter or credentials.
+- GitHub Pages workflow committed; deployment remains unverified while GitHub Actions runner allocation fails and the Pages source setting remains to be selected.
+- AI research/skill learning must remain proposal-based: generated research is untrusted, changes to risk policy or permissions require explicit approval and auditable versioning.
