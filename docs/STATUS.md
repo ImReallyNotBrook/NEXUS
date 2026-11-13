@@ -78,3 +78,11 @@ Updated: 2026-11-14
 - Provider resolution now enforces a configurable minimum candle count and fails over when a source returns insufficient history. The BTC dashboard requires at least 15 candles before accepting a provider response.
 - Added 12 Vitest specifications for market-data quality/comparison and one resolver test for minimum-history failover. Cross-feed confirmation requires the latest candle timestamp to match, not merely older overlap. Local strict TypeScript compilation passed for the quality module; deterministic Node harnesses passed 12 quality/comparison assertions and 2 minimum-history resolver assertions.
 - The Vitest suite and production build remain unverified. GitHub Actions runner allocation and Android browser/device integration are still outstanding; no live endpoint or deployment success is claimed.
+
+## Market-data integrity follow-up
+
+- Centralized IndexedDB schema creation in `src/adapters/nexus-database.ts` (version 2). Paper-account and market-cache adapters now use the same schema owner and close connections on version changes.
+- Added regression specifications for both stores existing in the shared schema and concurrent opens.
+- Added a market-quality rule and regression specification rejecting candle timestamps not aligned to the requested UTC interval.
+- Local verification: strict TypeScript compilation passed for the shared database and both persistence adapters; an in-memory IndexedDB integration harness passed paper-account round-trip, market-cache round-trip and shared schema-version checks; a separate quality harness passed aligned/misaligned timestamp scenarios.
+- Full Vitest and browser IndexedDB verification remain pending because the repository's GitHub Actions runner is not allocating a hosted runner.
