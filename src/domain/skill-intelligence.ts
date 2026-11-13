@@ -122,3 +122,31 @@ export function approveSkill(
     reviewedAt,
   });
 }
+
+
+/** Records an explicit human rejection as a new immutable, non-executable ledger entry. */
+export function rejectSkill(
+  skill: SkillRecord,
+  actor: string,
+  rationale: string,
+  reviewedAt: number,
+): SkillRecord {
+  if (!skill || (skill.status !== "quarantined" && skill.status !== "review-required")) {
+    throw new Error("Only an unreviewed skill candidate can be rejected");
+  }
+  if (typeof actor !== "string" || actor.trim().length < 2 ||
+      typeof rationale !== "string" || rationale.trim().length < 10 ||
+      !Number.isSafeInteger(reviewedAt) || reviewedAt <= 0) {
+    throw new TypeError("A named human reviewer, rationale and valid timestamp are required");
+  }
+  return Object.freeze({
+    ...skill,
+    id: skill.id + "@rejected-" + reviewedAt,
+    capabilities: Object.freeze([...skill.capabilities]),
+    status: "rejected" as const,
+    executable: false as const,
+    approvedBy: null,
+    approvalRationale: rationale.trim(),
+    reviewedAt,
+  });
+}
