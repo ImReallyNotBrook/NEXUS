@@ -59,6 +59,10 @@ describe("runResearchBatch", () => {
     expect(report.candidateResults[0].scorecard.completedTrades).toBe(0);
     expect(report.candidateResults[1].scorecard.completedTrades).toBeGreaterThan(0);
     expect(report.dataset).toMatchObject({ candleCount: 30, firstTimestamp: 0, lastTimestamp: 29 * 60_000 });
+    expect(report.dataset.fingerprint).toMatch(/^fnv1a32:[0-9a-f]{8}$/);
+    const altered = candles.map((candle, index) => index === 0 ? { ...candle, close: candle.close + 0.01 } : candle);
+    const alteredReport = runResearchBatch(altered, [{ id: "hold", name: "Hold", fit: () => () => "hold" }], baseConfig);
+    expect(alteredReport.dataset.fingerprint).not.toBe(report.dataset.fingerprint);
     expect(seen.length).toBeGreaterThan(0);
   });
 
