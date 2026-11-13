@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { createPaperAccount, executePaperMarketOrder, markPaperAccount } from "./paper-broker";
 
-describe("paper broker", () => {
+describe("paper broker", () => {\n  const timestamp = Date.UTC(2026, 0, 1);
   it("starts with an isolated 10,000 USDT simulated account", () => {
-    const account = createPaperAccount();
+    const account = createPaperAccount({}, timestamp);
     expect(account.cash).toBe(10_000);
     expect(account.initialCash).toBe(10_000);
     expect(account.fills).toHaveLength(0);
   });
 
   it("applies adverse slippage and fees to a buy fill", () => {
-    const account = createPaperAccount({ feeRate: 0.001, slippageRate: 0.002, maxPositionValueFraction: 0.9 });
+    const account = createPaperAccount({ feeRate: 0.001, slippageRate: 0.002, maxPositionValueFraction: 0.9 }, timestamp);
     const result = executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.1, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1, 12),
@@ -22,7 +22,7 @@ describe("paper broker", () => {
   });
 
   it("rejects a buy that exceeds the per-position allocation cap", () => {
-    const account = createPaperAccount({ maxPositionValueFraction: 0.2 });
+    const account = createPaperAccount({ maxPositionValueFraction: 0.2 }, timestamp);
     expect(() => executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.05, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
@@ -30,7 +30,7 @@ describe("paper broker", () => {
   });
 
   it("rejects overspending including fees and slippage", () => {
-    const account = createPaperAccount({ feeRate: 0.01, slippageRate: 0.01, maxPositionValueFraction: 1 });
+    const account = createPaperAccount({ feeRate: 0.01, slippageRate: 0.01, maxPositionValueFraction: 1 }, timestamp);
     expect(() => executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.2, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
@@ -38,7 +38,7 @@ describe("paper broker", () => {
   });
 
   it("enforces the allocation cap across repeated buys in one symbol", () => {
-    const account = createPaperAccount({ maxPositionValueFraction: 0.25 });
+    const account = createPaperAccount({ maxPositionValueFraction: 0.25 }, timestamp);
     const first = executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.04, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
@@ -50,7 +50,7 @@ describe("paper broker", () => {
   });
 
   it("allows risk-reducing sells after the daily loss limit is breached", () => {
-    const account = createPaperAccount({ maxDailyLossFraction: 0.02, maxPositionValueFraction: 0.9 });
+    const account = createPaperAccount({ maxDailyLossFraction: 0.02, maxPositionValueFraction: 0.9 }, timestamp);
     const bought = executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.1, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
@@ -64,7 +64,7 @@ describe("paper broker", () => {
   });
 
   it("rejects sells larger than the open position", () => {
-    const account = createPaperAccount();
+    const account = createPaperAccount({}, timestamp);
     expect(() => executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "sell", quantity: 1, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
@@ -73,7 +73,7 @@ describe("paper broker", () => {
 
   it("realizes P&L and charges fees on both sides", () => {
     const config = { feeRate: 0.001, slippageRate: 0, maxPositionValueFraction: 0.9 };
-    const bought = executePaperMarketOrder(createPaperAccount(config), {
+    const bought = executePaperMarketOrder(createPaperAccount(config, timestamp), {
       symbol: "BTCUSDT", side: "buy", quantity: 0.1, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
     });
@@ -87,7 +87,7 @@ describe("paper broker", () => {
   });
 
   it("blocks new orders after the configured daily drawdown limit", () => {
-    const account = createPaperAccount({ maxDailyLossFraction: 0.02, maxPositionValueFraction: 0.9 });
+    const account = createPaperAccount({ maxDailyLossFraction: 0.02, maxPositionValueFraction: 0.9 }, timestamp);
     const bought = executePaperMarketOrder(account, {
       symbol: "BTCUSDT", side: "buy", quantity: 0.1, referencePrice: 50_000,
       timestamp: Date.UTC(2026, 0, 1),
@@ -100,7 +100,7 @@ describe("paper broker", () => {
   });
 
   it("rejects invalid prices, quantities and symbols", () => {
-    const account = createPaperAccount();
+    const account = createPaperAccount({}, timestamp);
     const base = { symbol: "BTCUSDT", side: "buy" as const, quantity: 0.1, referencePrice: 50_000, timestamp: 1 };
     expect(() => executePaperMarketOrder(account, { ...base, quantity: 0 })).toThrow();
     expect(() => executePaperMarketOrder(account, { ...base, referencePrice: -1 })).toThrow();
