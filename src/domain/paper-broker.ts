@@ -117,9 +117,8 @@ export function markPaperAccount(
 export function executePaperMarketOrder(
   account: PaperAccount,
   request: PaperOrderRequest,
-  overrides: Partial<PaperBrokerConfig> = {},
 ): PaperAccount {
-  const config = { ...account.config, ...overrides, initialCash: account.initialCash };
+  const config = account.config;
   validateConfig(config);
   const symbol = request.symbol.trim().toUpperCase();
   if (!/^[A-Z0-9]{5,20}$/.test(symbol)) throw new TypeError("symbol must be an exchange-style alphanumeric pair");
