@@ -4,7 +4,8 @@ import { getSeedSkillCandidates } from "./skill-catalogue";
 describe("curated external skill catalogue", () => {
   it("registers source-backed repositories without approving or executing them", () => {
     const candidates = getSeedSkillCandidates();
-    expect(candidates.length).toBeGreaterThanOrEqual(7);
+    expect(candidates.length).toBeGreaterThanOrEqual(9);
+    expect(candidates.find((item) => item.id === "finrl-x")?.license).toBe("Apache-2.0");
     expect(candidates.every((item) => item.executable === false)).toBe(true);
     expect(candidates.every((item) => item.status === "quarantined")).toBe(true);
     expect(candidates.every((item) => item.approvedBy === null)).toBe(true);
