@@ -80,4 +80,24 @@ describe("runBacktest", () => {
     expect(result.maxDrawdownPct).toBeGreaterThanOrEqual(0);
     expect(result.endingEquity).toBeCloseTo(result.cash + (result.openPosition?.quantity ?? 0) * 120);
   });
+
+  it("gives the strategy an immutable prefix ending at the current close, never future bars", () => {
+    const observed: Array<{ lastTimestamp: number; historyLength: number; frozen: boolean }> = [];
+    const result = runBacktest(candles, (history) => {
+      observed.push({
+        lastTimestamp: history[history.length - 1].timestamp,
+        historyLength: history.length,
+        frozen: Object.isFrozen(history) && history.every((candle) => Object.isFrozen(candle)),
+      });
+      return "hold";
+    }, { initialCapital: 1000, feeRate: 0, slippageBps: 0, allocationFraction: 1 });
+
+    expect(observed).toEqual(candles.map((candle, index) => ({
+      lastTimestamp: candle.timestamp,
+      historyLength: index + 1,
+      frozen: true,
+    })));
+    expect(result.completedTrades).toBe(0);
+  });
+
 });
