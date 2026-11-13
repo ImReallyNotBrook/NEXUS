@@ -74,7 +74,7 @@ export function runBacktest(
     // Orders generated at the previous close fill at this candle's open.
     if (pending === "buy" && position === null) {
       const fillPrice = candle.open * (1 + slippage);
-      const budget = Math.min(cash, (cash + (position?.quantity ?? 0) * candle.open) * allocationFraction);
+      const budget = Math.min(cash, cash * allocationFraction);
       const quantity = budget / (fillPrice * (1 + feeRate));
       if (quantity > 0 && Number.isFinite(quantity)) {
         const notional = quantity * fillPrice;
