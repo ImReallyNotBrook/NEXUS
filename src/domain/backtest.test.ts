@@ -36,6 +36,15 @@ describe("runBacktest", () => {
     expect(result.trades[0].exitTimestamp).toBe(5);
   });
 
+  it("rejects warm-up bars that consume an empty or complete dataset", () => {
+    expect(() => runBacktest([], () => "hold", {
+      initialCapital: 1000, feeRate: 0, slippageBps: 0, allocationFraction: 1, warmupBars: 1,
+    })).toThrow(/warmupBars/i);
+    expect(() => runBacktest(candles, () => "hold", {
+      initialCapital: 1000, feeRate: 0, slippageBps: 0, allocationFraction: 1, warmupBars: candles.length,
+    })).toThrow(/warmupBars/i);
+  });
+
   it("applies fees and adverse slippage to both entry and exit", () => {
     const result = runBacktest(candles.slice(0, 3), (history) =>
       history.length === 1 ? "buy" : history.length === 2 ? "sell" : "hold",
