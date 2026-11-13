@@ -4,7 +4,8 @@ import { rsi } from "./domain/indicators";
 import { fetchBinanceCandles, type BinanceInterval } from "./adapters/binance-public";
 import { fetchKrakenCandles } from "./adapters/kraken-public";
 import { IndexedDbMarketSnapshotCache } from "./adapters/market-snapshot-cache";
-import { resolveMarketSnapshot, type MarketDataProvider } from "./domain/market-data";
+import { resolveMarketSnapshot, type MarketDataProvider, type MarketSnapshot } from "./domain/market-data";
+import { compareMarketSnapshots, validateSnapshotQuality } from "./domain/market-data-quality";
 import { PaperAccountStore } from "./adapters/paper-account-store";
 import {
   createPaperAccount, executePaperMarketOrder, getPaperAccountSummary, markPaperAccount,
@@ -37,6 +38,7 @@ root.innerHTML = `
         <div class="market-heading"><h2>BTC / USDT</h2><span class="tag safe">PUBLIC DATA</span></div>
         <strong class="market-value" id="btc-price">—</strong>
         <p id="btc-change" class="market-change">Waiting for market data</p>
+        <p id="market-quality" class="small" role="status">Data quality not checked</p>
         <div class="market-metrics"><span>RSI (14)</span><strong id="btc-rsi">—</strong></div>
         <div class="market-footer"><span id="market-updated">No snapshot loaded</span><button id="refresh-market" class="refresh-button" type="button">Refresh</button></div>
       </article>
@@ -74,6 +76,7 @@ const priceElement = document.querySelector<HTMLElement>("#btc-price");
 const changeElement = document.querySelector<HTMLElement>("#btc-change");
 const rsiElement = document.querySelector<HTMLElement>("#btc-rsi");
 const updatedElement = document.querySelector<HTMLElement>("#market-updated");
+const qualityElement = document.querySelector<HTMLElement>("#market-quality");
 const refreshButton = document.querySelector<HTMLButtonElement>("#refresh-market");
 const paperEquityElement = document.querySelector<HTMLElement>("#paper-equity");
 const paperCashElement = document.querySelector<HTMLElement>("#paper-cash");
@@ -101,6 +104,7 @@ const marketProviders: MarketDataProvider[] = [
 let paperAccount: PaperAccount | null = null;
 let latestBtcPrice: number | null = null;
 let latestBtcFetchedAt: number | null = null;
+let marketDataTrusted = false;
 let paperOrderInFlight = false;
 
 function renderPaperAccount(): void {
@@ -116,7 +120,7 @@ function renderPaperAccount(): void {
       ? recent.map((fill) => `${fill.side.toUpperCase()} ${fill.quantity} BTC · ${fill.price.toFixed(2)} · fee ${fill.fee.toFixed(2)} USDT`).join("\n")
       : "No paper fills yet";
   }
-  const canTrade = latestBtcPrice !== null && latestBtcFetchedAt !== null && Date.now() - latestBtcFetchedAt <= 5 * 60 * 1000;
+  const canTrade = marketDataTrusted && latestBtcPrice !== null && latestBtcFetchedAt !== null && Date.now() - latestBtcFetchedAt <= 5 * 60 * 1000;
   if (paperBuyButton) paperBuyButton.disabled = !canTrade || paperOrderInFlight;
   if (paperSellButton) paperSellButton.disabled = !canTrade || paperOrderInFlight || !paperAccount.positions.BTCUSDT;
 }
@@ -174,6 +178,7 @@ async function loadMarketSnapshot(): Promise<void> {
   changeElement.textContent = "Fetching latest completed hourly candles";
   latestBtcPrice = null;
   latestBtcFetchedAt = null;
+  marketDataTrusted = false;
   renderPaperAccount();
   try {
     const snapshot = await resolveMarketSnapshot(marketProviders, marketCache, {
@@ -181,6 +186,39 @@ async function loadMarketSnapshot(): Promise<void> {
     });
     const candles = snapshot.candles;
     if (candles.length < 15) throw new Error("Not enough completed candles to calculate RSI");
+    const quality = validateSnapshotQuality(snapshot, {
+      now: Date.now(), intervalMs: 60 * 60 * 1000, maxAgeMs: 5 * 60 * 1000,
+    });
+    let crossFeedStatus = "Cross-feed check unavailable";
+    let crossFeedDiscrepancy = false;
+    const secondaryProvider = marketProviders.find((provider) => provider.name !== snapshot.provider);
+    if (secondaryProvider) {
+      try {
+        const secondaryCandles = await secondaryProvider.fetchCandles({
+          symbol: "BTCUSDT", interval: "1h", limit: 25,
+        });
+        const secondarySnapshot: MarketSnapshot = {
+          symbol: "BTCUSDT", interval: "1h", provider: secondaryProvider.name,
+          fetchedAt: Date.now(), stale: false, candles: secondaryCandles,
+        };
+        const comparison = compareMarketSnapshots(snapshot, secondarySnapshot, 50);
+        crossFeedDiscrepancy = comparison.status === "discrepancy";
+        crossFeedStatus = comparison.status === "within_tolerance"
+          ? "Cross-feed within 50 bps · " + comparison.comparedCandles + " candles"
+          : comparison.status === "discrepancy"
+            ? "CROSS-FEED PRICE DISCREPANCY · max " + (comparison.maxDeviationBps ?? 0).toFixed(1) + " bps"
+            : "Cross-feed overlap insufficient";
+      } catch {
+        crossFeedStatus = "Cross-feed check unavailable";
+      }
+    }
+    marketDataTrusted = quality.status !== "fail" && !crossFeedDiscrepancy && !snapshot.stale;
+    if (qualityElement) {
+      qualityElement.textContent = "Data quality: " + quality.status.toUpperCase() + " · " +
+        quality.issues.map((issue) => issue.code).join(", ") + (quality.issues.length ? " · " : "") + crossFeedStatus;
+      qualityElement.dataset.quality = quality.status === "fail" || crossFeedDiscrepancy
+        ? "fail" : quality.status;
+    }
     const firstClose = candles[0].close;
     if (firstClose <= 0) throw new Error("Invalid reference price in market data");
     const last = candles[candles.length - 1];
@@ -188,7 +226,7 @@ async function loadMarketSnapshot(): Promise<void> {
     const rsiValues = rsi(candles.map((candle) => candle.close), 14);
     const latestRsi = rsiValues[rsiValues.length - 1];
     latestBtcPrice = last.close;
-    latestBtcFetchedAt = snapshot.stale ? 0 : Date.now();
+    latestBtcFetchedAt = marketDataTrusted ? Date.now() : 0;
     if (paperAccount) {
       paperAccount = markPaperAccount(paperAccount, { BTCUSDT: last.close }, Date.now());
       await paperStore.save(paperAccount);
@@ -207,6 +245,7 @@ async function loadMarketSnapshot(): Promise<void> {
   } catch (error) {
     latestBtcPrice = null;
     latestBtcFetchedAt = null;
+    marketDataTrusted = false;
     renderPaperAccount();
     changeElement.textContent = error instanceof Error ? error.message : "Market data unavailable";
     changeElement.dataset.direction = "neutral";
