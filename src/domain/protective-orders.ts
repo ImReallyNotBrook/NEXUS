@@ -21,15 +21,7 @@ export interface ProtectiveExit {
  * opening price when it gaps above the limit. If both levels are touched
  * intrabar and OHLC cannot reveal the path, the adverse stop is selected.
  */
-export function resolveLongProtectiveExit(
-  entryPrice: number,
-  candle: Candle,
-  config: ProtectiveExitConfig,
-): ProtectiveExit | null {
-  if (!Number.isFinite(entryPrice) || entryPrice <= 0) {
-    throw new RangeError("entryPrice must be positive");
-  }
-
+export function validateProtectiveExitConfig(config: ProtectiveExitConfig): void {
   const hasStop = config.stopLossPct !== undefined;
   const hasTarget = config.takeProfitPct !== undefined;
   if (!hasStop && !hasTarget) {
@@ -41,9 +33,20 @@ export function resolveLongProtectiveExit(
   if (hasTarget && (!Number.isFinite(config.takeProfitPct) || config.takeProfitPct! <= 0)) {
     throw new RangeError("takeProfitPct must be positive");
   }
+}
 
-  const stop = hasStop ? entryPrice * (1 - config.stopLossPct! / 100) : null;
-  const target = hasTarget ? entryPrice * (1 + config.takeProfitPct! / 100) : null;
+export function resolveLongProtectiveExit(
+  entryPrice: number,
+  candle: Candle,
+  config: ProtectiveExitConfig,
+): ProtectiveExit | null {
+  if (!Number.isFinite(entryPrice) || entryPrice <= 0) {
+    throw new RangeError("entryPrice must be positive");
+  }
+  validateProtectiveExitConfig(config);
+
+  const stop = config.stopLossPct !== undefined ? entryPrice * (1 - config.stopLossPct / 100) : null;
+  const target = config.takeProfitPct !== undefined ? entryPrice * (1 + config.takeProfitPct / 100) : null;
 
   // Opening gaps are observable before the rest of the candle's range.
   if (stop !== null && candle.open <= stop) {
@@ -57,7 +60,7 @@ export function resolveLongProtectiveExit(
   const targetTouched = target !== null && candle.high >= target;
 
   // Intrabar path is unknowable from OHLC; assume the adverse order happened first.
-  if (stopTouched) return { reason: "stop-loss", referencePrice: stop! };
-  if (targetTouched) return { reason: "take-profit", referencePrice: target! };
+  if (stopTouched) return { reason: "stop-loss", referencePrice: stop };
+  if (targetTouched) return { reason: "take-profit", referencePrice: target };
   return null;
 }
