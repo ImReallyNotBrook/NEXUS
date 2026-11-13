@@ -23,6 +23,7 @@ export interface SkillProposal {
   baseVersion: string;
   proposedVersion: string;
   changeType: SkillChangeType;
+  changedFiles: readonly string[];
   title: string;
   summary: string;
   evidence: readonly SkillEvidence[];
@@ -78,6 +79,17 @@ export function assessSkillProposal(proposal: SkillProposal): SkillAssessment {
   if (!proposal.id.trim() || !proposal.skillId.trim() || !proposal.title.trim() || !proposal.summary.trim()) {
     reasons.push("Proposal identity, skill, title and summary are required");
   }
+  const allowedChangeTypes: readonly string[] = [
+    "knowledge", "methodology", "risk_policy", "system_policy", "execution_permission",
+  ];
+  if (!allowedChangeTypes.includes(proposal.changeType)) {
+    reasons.push("Unknown skill change classification");
+  }
+  if (!Array.isArray(proposal.changedFiles) || proposal.changedFiles.length === 0 ||
+      proposal.changedFiles.some((path) => !path.trim() || path.startsWith("/") ||
+        path.includes("..") || path.includes("\\"))) {
+    reasons.push("Proposal must identify safe, repository-relative changed file paths");
+  }
   if (!isVersionGreater(proposal.proposedVersion, proposal.baseVersion)) {
     reasons.push("Proposed semantic version must be valid and greater than the active version");
   }
@@ -104,10 +116,14 @@ export function assessSkillProposal(proposal: SkillProposal): SkillAssessment {
   }
 
   const valid = reasons.length === 0;
-  const requiresHumanApproval = valid && proposal.changeType !== "knowledge";
+  const knowledgeOnlyFiles = valid && proposal.changedFiles.every((path) =>
+    path.startsWith("skills/knowledge/") && path.endsWith(".md"),
+  );
+  const autoPromotable = valid && proposal.changeType === "knowledge" && knowledgeOnlyFiles;
+  const requiresHumanApproval = valid && !autoPromotable;
   return {
     valid,
-    autoPromotable: valid && proposal.changeType === "knowledge",
+    autoPromotable,
     requiresHumanApproval,
     reasons,
   };
