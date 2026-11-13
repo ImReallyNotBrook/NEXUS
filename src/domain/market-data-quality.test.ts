@@ -3,7 +3,7 @@ import type { Candle } from "./candles";
 import type { MarketSnapshot } from "./market-data";
 import { compareMarketSnapshots, validateSnapshotQuality } from "./market-data-quality";
 
-const base = 1_700_000_000_000;
+const base = Math.floor(1_700_000_000_000 / 3_600_000) * 3_600_000;
 const candles: Candle[] = [
   { timestamp: base, open: 100, high: 102, low: 99, close: 101, volume: 10 },
   { timestamp: base + 3_600_000, open: 101, high: 103, low: 100, close: 102, volume: 12 },
