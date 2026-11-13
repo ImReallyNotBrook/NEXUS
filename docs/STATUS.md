@@ -135,3 +135,13 @@ Updated: 2026-11-14
 - Added a typed governance module and 9 Vitest specifications for semantic version progression, evidence, score improvement, regression checks, changed-file classification, path traversal, immutable promotion and human approval.
 - Local strict TypeScript compilation passed for the governance module; a deterministic Node harness passed 7 governance scenarios.
 - This is an instruction and proposal framework, not an on-device LLM or self-training model. No model API or paid inference service is connected. Automatic promotion remains operationally disabled until a trusted evaluation runner and full CI suite are verified.
+
+
+## Out-of-sample strategy scorecard increment
+
+- Added a scorecard for chronological walk-forward evaluation: positive-fold share, mean/median/best/worst fold returns, fold-return dispersion, worst fold drawdown, completed-trade win rate, gross profit/loss, profit factor, net expectancy and fees.
+- Profit factor is null when no losing trades exist; trade metrics are null when no completed trades exist. Open positions are excluded from completed-trade statistics. Fee-inclusive net PnL is not charged a second time.
+- Added 4 Vitest specifications covering ordinary results, no-loss samples, no-trade samples and malformed trade values.
+- Local strict TypeScript compilation passed for the scorecard and its backtest/walk-forward dependencies. A deterministic Node harness passed 12 assertions.
+- This scorecard does not claim statistical significance or produce Sharpe/Sortino without a defined periodic return series and risk-free-rate convention. It does not remove multiple-testing, survivorship, market-impact or regime-shift risks.
+- Full Vitest, production build, hosted CI and deployment remain unverified while GitHub Actions runner allocation is blocked by the account's failed payment authorization warning; no billing changes have been made.
