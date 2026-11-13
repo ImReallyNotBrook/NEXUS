@@ -18,7 +18,8 @@ Both adapters use public endpoints and require no API key. A provider response i
 3. If every provider fails, load the matching symbol/interval cache entry.
 4. Cached data is accepted only when its fetch time is not in the future and it is no older than 24 hours.
 5. Cache fallback is explicitly marked stale. The dashboard displays the source and stale state; paper orders are disabled whenever the snapshot is stale.
-6. If no valid fresh provider response or eligible cache entry exists, return an error. There is no silent synthetic price or empty-series substitution.
+6. A configurable minimum candle count is enforced during provider resolution. A short response is treated as provider failure and the next source is tried.
+7. If no valid fresh provider response or eligible cache entry exists, return an error. There is no silent synthetic price or empty-series substitution.
 
 A local cache write failure does not invalidate a fresh provider response. Cache read failure does not create data; the market request fails visibly.
 
@@ -35,7 +36,10 @@ The cache is device-local, not a cloud backup. Browser data clearing or eviction
 - No currently open candle is passed to indicators or backtests.
 - Provider timestamps and candle close timestamps are distinct: `fetchedAt` records when NEXUS retrieved the snapshot; each candle timestamp identifies its open time.
 - Cross-provider prices are not blindly merged. Different venues have different liquidity, volume conventions, pair availability and market microstructure.
-- The dashboard still uses one hourly snapshot and manual refresh. It is not a tick feed or a trading-grade execution quote.
+- The quality gate checks candle ordering/OHLC validity, exact interval continuity, snapshot fetch-time validity and age. Missing intervals fail; zero-volume candles warn but are not silently discarded.
+- Binance and Kraken hourly closes are compared only at identical candle timestamps. The dashboard flags deviations above 50 bps; it does not average or substitute prices.
+- Paper orders require a fresh quality-passing snapshot and a successful within-tolerance cross-provider comparison. A missing second feed, insufficient overlap or discrepancy blocks paper orders.
+- The dashboard still uses hourly snapshots and manual refresh. It is not a tick feed or a trading-grade execution quote.
 
 ## Indicator conventions
 
