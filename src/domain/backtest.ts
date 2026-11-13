@@ -59,7 +59,8 @@ export function runBacktest(
 
   const candles = validateCandles(inputCandles);
   const warmupBars = config.warmupBars ?? 0;
-  if (!Number.isSafeInteger(warmupBars) || warmupBars < 0 || (candles.length > 0 && warmupBars >= candles.length)) {
+  if (!Number.isSafeInteger(warmupBars) || warmupBars < 0 || warmupBars > candles.length ||
+      (candles.length > 0 && warmupBars === candles.length)) {
     throw new RangeError("warmupBars must be a non-negative integer smaller than the candle count");
   }
   if (candles.some((candle) => candle.open <= 0 || candle.high <= 0 || candle.low <= 0 || candle.close <= 0)) {
