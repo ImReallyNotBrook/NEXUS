@@ -47,8 +47,8 @@ Updated: 2026-11-14
 - Added a deterministic BTC/USDT spot paper broker with a 10,000 USDT default simulated balance.
 - Added adverse slippage, two-sided fees, fee-inclusive entry cost basis, per-symbol exposure limits, daily drawdown controls, and a fill ledger.
 - Daily drawdown lock blocks new buys but explicitly permits sells to reduce risk.
-- Added local IndexedDB persistence for the paper account and a dashboard order desk. Account state is updated in memory only after a successful persistence transaction.
-- Added 9 paper broker Vitest specifications. A separate local Node harness passed 9 paper broker scenarios; strict TypeScript compilation passed for the paper broker module.
+- Added local IndexedDB persistence for the paper account and a dashboard order desk. Risk settings are frozen into each account snapshot; repeated clicks are serialized; account state is updated in memory only after a successful persistence transaction.
+- Added 9 paper broker and 2 IndexedDB adapter Vitest specifications. Separate local Node harnesses passed 9 paper broker scenarios and 4 persistence assertions; strict TypeScript compilation passed for the paper broker and IndexedDB adapter modules.
 - Full repository Vitest and Vite production build remain unverified because GitHub Actions jobs are failing before runner allocation (runner ID 0, empty runner name, no job steps). The latest workflow run must be checked again after this commit.
 - IndexedDB browser integration and the full mobile UI have not yet been exercised in a real browser.
 - Market orders use the latest completed candle close as a reference; spread, order-book depth, latency, partial fills, and market impact are not modelled.
