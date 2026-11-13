@@ -37,10 +37,9 @@ Updated: 2026-11-14
 
 ## Next implementation tasks
 1. Resolve GitHub Actions runner execution and run the full Vitest/build pipeline.
-2. Add provider-neutral market data interfaces, IndexedDB caching and stale-data metadata.
-3. Add a second public data source for cross-provider validation.
-4. Extend backtests with spread, partial-fill and market-impact models plus out-of-sample reporting.
-5. Add local persistence and a paper broker ledger with independent risk checks.
+2. Add historical candle pagination/backfill with provider-specific rate and retention limits.
+3. Add spread, partial-fill and market-impact models plus out-of-sample backtest reporting.
+4. Add automated data-quality monitoring and a visible feed-health history.
 
 ## Paper trading increment
 
@@ -69,3 +68,13 @@ Updated: 2026-11-14
 - Local strict TypeScript compilation passed for the provider resolver, Kraken adapter and IndexedDB cache. Local deterministic harness passed 4 resolver assertions, 3 Kraken adapter assertions and 4 IndexedDB cache assertions.
 - Added 5 market resolver, 4 Kraken adapter and 2 cache Vitest specifications. The repository Vitest suite and production build remain unverified because GitHub-hosted runner allocation has been failing before steps execute.
 - No live API connectivity or Android browser integration has been claimed; public endpoint behavior still requires a real browser/device test.
+
+
+## Market data quality increment
+
+- Added snapshot quality diagnostics for invalid OHLCV, empty feeds, missing hourly intervals, invalid/future/stale fetch timestamps, and zero-volume warnings. Gaps and stale/invalid snapshots fail the quality gate; zero-volume candles warn without being rewritten.
+- Added timestamp-aligned Binance/Kraken close-price comparison using symmetric midpoint basis-point deviation. Feeds are never merged or averaged; deviations above 50 bps are flagged.
+- Paper orders now require a quality-passing snapshot and a successful within-tolerance cross-provider check. A missing secondary feed, insufficient timestamp overlap, stale cache, candle gap or >50 bps discrepancy blocks orders.
+- Provider resolution now enforces a configurable minimum candle count and fails over when a source returns insufficient history. The BTC dashboard requires at least 15 candles before accepting a provider response.
+- Added 9 Vitest specifications for market-data quality/comparison and one resolver test for minimum-history failover. Local strict TypeScript compilation passed for the quality module; a deterministic Node harness passed 9 quality/comparison assertions.
+- The Vitest suite and production build remain unverified. GitHub Actions runner allocation and Android browser/device integration are still outstanding; no live endpoint or deployment success is claimed.
