@@ -164,7 +164,7 @@ export function mountSkillConsole(container: HTMLElement): void {
           card.append(node("p", "skill-review-outcome",
             candidate.status === "approved"
               ? "Human review approved by " + candidate.approvedBy + " · " + candidate.approvalRationale
-              : "Rejected by " + candidate.approvedBy + " · " + candidate.approvalRationale));
+              : "Rejected by " + candidate.rejectedBy + " · " + candidate.approvalRationale));
         }
         list.append(card);
       }
