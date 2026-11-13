@@ -83,7 +83,7 @@ const paperBuyButton = document.querySelector<HTMLButtonElement>("#paper-buy");
 const paperSellButton = document.querySelector<HTMLButtonElement>("#paper-sell");
 const paperStore = new PaperAccountStore();
 let paperAccount: PaperAccount | null = null;
-let latestBtcPrice: number | null = null;
+let latestBtcPrice: number | null = null;\nlet paperOrderInFlight = false;
 
 function renderPaperAccount(): void {
   if (!paperAccount) return;
@@ -118,6 +118,9 @@ async function initializePaperAccount(): Promise<void> {
 
 async function submitPaperOrder(side: "buy" | "sell"): Promise<void> {
   if (!paperAccount || latestBtcPrice === null || !paperQuantityInput || !paperStatusElement) return;
+  if (paperOrderInFlight) return;
+  paperOrderInFlight = true;
+  renderPaperAccount();
   const quantity = Number(paperQuantityInput.value);
   try {
     const timestamp = Date.now();
@@ -131,6 +134,9 @@ async function submitPaperOrder(side: "buy" | "sell"): Promise<void> {
     paperStatusElement.textContent = `Paper ${side} filled · no exchange order was sent`;
   } catch (error) {
     paperStatusElement.textContent = error instanceof Error ? error.message : "Paper order rejected";
+  } finally {
+    paperOrderInFlight = false;
+    renderPaperAccount();
   }
 }
 
