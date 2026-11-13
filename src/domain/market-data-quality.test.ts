@@ -25,7 +25,7 @@ describe("validateSnapshotQuality", () => {
 
   it("fails when one or more expected candles are missing", () => {
     const result = validateSnapshotQuality(snapshot("Binance", [candles[0], candles[2]]), {
-      now: base + 7_300_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+      now: base + 10_900_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     expect(result.status).toBe("fail");
     expect(result.issues.some((issue) => issue.code === "CANDLE_GAP")).toBe(true);
@@ -34,7 +34,7 @@ describe("validateSnapshotQuality", () => {
   it("warns on zero-volume candles without treating them as invalid OHLC", () => {
     const rows = [candles[0], { ...candles[1], volume: 0 }, candles[2]];
     const result = validateSnapshotQuality(snapshot("Binance", rows), {
-      now: base + 7_300_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+      now: base + 10_900_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     expect(result.status).toBe("warning");
     expect(result.issues.some((issue) => issue.code === "ZERO_VOLUME")).toBe(true);
@@ -45,7 +45,7 @@ describe("validateSnapshotQuality", () => {
       now: base + 11_900_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     const future = validateSnapshotQuality(snapshot("Binance", candles, base + 9_000_000), {
-      now: base + 7_300_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+      now: base + 10_900_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     expect(stale.status).toBe("fail");
     expect(future.issues.some((issue) => issue.code === "FUTURE_SNAPSHOT")).toBe(true);
@@ -71,7 +71,7 @@ describe("validateSnapshotQuality", () => {
   it("fails malformed candle sequences using the shared candle validator", () => {
     const duplicate = [candles[0], { ...candles[1], timestamp: candles[0].timestamp }];
     const result = validateSnapshotQuality(snapshot("Binance", duplicate), {
-      now: base + 7_300_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
+      now: base + 10_900_000, intervalMs: 3_600_000, maxAgeMs: 300_000,
     });
     expect(result.status).toBe("fail");
     expect(result.issues.some((issue) => issue.code === "INVALID_CANDLES")).toBe(true);
