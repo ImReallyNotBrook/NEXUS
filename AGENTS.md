@@ -18,3 +18,11 @@
 - Prefer maintained open-source dependencies with permissive licences. Check dependency cost and bundle impact.
 - Keep strategy logic deterministic and separate from presentation and data adapters.
 - Record assumptions, risks, and decisions in docs.
+
+## Skill governance
+- Active AI instructions live under `.agents/skills/`; evidence-only knowledge notes live under `skills/knowledge/`.
+- New skills must use a unique `SKILL.md` name and trigger description, then explicit workflow and safety constraints.
+- Skill changes require a versioned proposal, source evidence and baseline-versus-candidate evaluation.
+- Only evidence-only Markdown under `skills/knowledge/` can be considered for automatic knowledge promotion; changes elsewhere require human approval.
+- Never trust a proposal's self-declared change category without inspecting its exact changed-file manifest.
+- Do not auto-promote anything while CI and the full regression suite are unverified. AI-generated test claims are not test evidence.
