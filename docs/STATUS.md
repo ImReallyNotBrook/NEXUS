@@ -53,3 +53,9 @@ Updated: 2026-11-14
 - IndexedDB browser integration and the full mobile UI have not yet been exercised in a real browser.
 - Market orders use the latest completed candle close as a reference; the dashboard rejects orders when its fetched snapshot is older than five minutes. Spread, order-book depth, latency, partial fills, and market impact are not modelled.
 
+
+## Deployment preparation
+
+- Added a GitHub Pages deployment workflow gated by the complete test suite and production build.
+- Deployment is not live or verified. GitHub Pages must be set to use GitHub Actions once in repository Settings → Pages; the available GitHub connection cannot change that setting.
+- Current GitHub Actions runs continue to fail before hosted runner allocation, with runner ID 0 and no steps executed. This blocks both CI verification and deployment; no paid runner or hosting resource has been created.
