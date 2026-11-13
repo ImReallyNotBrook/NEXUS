@@ -113,6 +113,7 @@ export function approveSkill(
   }
   return Object.freeze({
     ...skill,
+    id: skill.id + "@approved-" + reviewedAt,
     capabilities: Object.freeze([...skill.capabilities]),
     status: "approved" as const,
     executable: false as const,
