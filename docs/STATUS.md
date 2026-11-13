@@ -86,3 +86,12 @@ Updated: 2026-11-14
 - Added a market-quality rule and regression specification rejecting candle timestamps not aligned to the requested UTC interval.
 - Local verification: strict TypeScript compilation passed for the shared database and both persistence adapters; an in-memory IndexedDB integration harness passed paper-account round-trip, market-cache round-trip and shared schema-version checks; a separate quality harness passed aligned/misaligned timestamp scenarios.
 - Full Vitest and browser IndexedDB verification remain pending because the repository's GitHub Actions runner is not allocating a hosted runner.
+
+## Walk-forward validation increment
+
+- Added an expanding/rolling chronological fold generator with fixed out-of-sample test windows, configurable step size and embargo bars.
+- Training, embargo and test segments are disjoint and ordered; only complete test windows are emitted. Input candles are validated and returned fold arrays/candle objects are frozen.
+- Added 4 Vitest specifications covering expanding windows, rolling windows, invalid/short inputs, and immutability.
+- Local TypeScript strict compilation passed for the fold generator. A deterministic Node harness passed 12 assertions.
+- The fold generator partitions data only; strategy selection, parameter tuning, fold-level backtests and untouched final holdout evaluation remain future work. It does not eliminate data snooping, survivorship bias or regime shift.
+- Full Vitest suite and production build remain unverified while GitHub Actions jobs fail before runner allocation.
