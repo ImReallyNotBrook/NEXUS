@@ -195,3 +195,14 @@ Updated: 2026-11-14
 - Added validation tests for research-run settings and a maximum 40-fold workload cap to limit CPU/memory use on mobile devices. Historical requests are bounded to 5,000 candles; no API keys are required.
 - Console currently runs experiments in memory and does not persist reports. No curated dataset, live market fetch, browser runtime, full Vitest suite or production build has been verified in this environment.
 - GitHub Actions account billing warning remains unresolved; no payment method, paid runner or spending limit changes were made.
+
+
+## Research persistence and strategy-config governance increment
+
+- Upgraded the shared IndexedDB schema to version 5 with a research-run store and strategy configuration ledger; existing paper account, market snapshot and candle history stores are retained.
+- Added local research report persistence, newest-first history listing, reopening and deletion. Saved reports preserve full fold results, metrics, regime attribution, dataset fingerprint and execution configuration.
+- Added a typed strategy-config proposal validator. Proposals require semantic version progression, finite explicit parameters, source-backed evidence, a named improved evaluation metric, passing tests and zero regressions.
+- Added immutable approved strategy-config version records requiring an explicit human identity, rationale and timestamp. Proposal and approved version entries are append-only IndexedDB records; duplicate record IDs fail instead of overwriting.
+- Added 3 research-run store tests, 2 strategy config ledger store tests, 4 governance tests and shared schema assertions. These specifications are committed but not executed in a dependency-installed environment.
+- No LLM is connected to generate recommendations, no approved configuration is automatically applied to strategy code or paper trading, and no live execution permission can be granted by this workflow. Browser-local data has no cloud backup and may be lost if site data is cleared.
+- Full Vitest, production build, hosted CI and Android browser integration remain unverified because GitHub Actions runner allocation is blocked by the account billing authorization warning. No payment method, paid runner or spending limit changes were made.
