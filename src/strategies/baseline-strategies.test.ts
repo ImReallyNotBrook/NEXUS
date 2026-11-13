@@ -40,7 +40,8 @@ describe("baseline strategy evaluators", () => {
     const history = candlesFromCloses([100, 101, 102, 103]);
     history[3] = { ...history[3], high: 200, close: 102 };
     expect(evaluate(history)).toBe("hold");
-    const breakout = [...history, {
+    const priorBars = candlesFromCloses([100, 101, 102, 103]);
+    const breakout = [...priorBars, {
       timestamp: 4 * 60_000, open: 104, high: 106, low: 103, close: 105, volume: 10,
     }];
     expect(evaluate(breakout)).toBe("buy");
