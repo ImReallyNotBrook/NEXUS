@@ -59,3 +59,13 @@ Updated: 2026-11-14
 - Added a GitHub Pages deployment workflow gated by the complete test suite and production build.
 - Deployment is not live or verified. GitHub Pages must be set to use GitHub Actions once in repository Settings → Pages; the available GitHub connection cannot change that setting.
 - Current GitHub Actions runs continue to fail before hosted runner allocation, with runner ID 0 and no steps executed. This blocks both CI verification and deployment; no paid runner or hosting resource has been created.
+
+## Provider-neutral market data increment
+
+- Added a provider-neutral market snapshot contract and ordered provider resolver with strict shared OHLCV validation.
+- Added independent public Kraken hourly OHLC fallback for BTC/USD and BTC/USDT. The current uncommitted Kraken row is excluded; unsupported pairs/intervals fail closed.
+- Added version-2 IndexedDB market snapshot cache, keyed by symbol and interval, sharing the paper-account database.
+- Resolver uses cache only after all providers fail, rejects cache entries older than 24 hours or with future timestamps, and marks cache fallback stale. The dashboard identifies the source and blocks paper orders for stale data.
+- Local strict TypeScript compilation passed for the provider resolver, Kraken adapter and IndexedDB cache. Local deterministic harness passed 4 resolver assertions and 3 Kraken adapter assertions.
+- Added 5 market resolver, 4 Kraken adapter and 2 cache Vitest specifications. The repository Vitest suite and production build remain unverified because GitHub-hosted runner allocation has been failing before steps execute.
+- No live API connectivity or Android browser integration has been claimed; public endpoint behavior still requires a real browser/device test.
