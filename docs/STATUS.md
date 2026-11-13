@@ -41,3 +41,15 @@ Updated: 2026-11-14
 3. Add a second public data source for cross-provider validation.
 4. Extend backtests with spread, partial-fill and market-impact models plus out-of-sample reporting.
 5. Add local persistence and a paper broker ledger with independent risk checks.
+
+## Paper trading increment
+
+- Added a deterministic BTC/USDT spot paper broker with a 10,000 USDT default simulated balance.
+- Added adverse slippage, two-sided fees, fee-inclusive entry cost basis, per-symbol exposure limits, daily drawdown controls, and a fill ledger.
+- Daily drawdown lock blocks new buys but explicitly permits sells to reduce risk.
+- Added local IndexedDB persistence for the paper account and a dashboard order desk. Account state is updated in memory only after a successful persistence transaction.
+- Added 9 paper broker Vitest specifications. A separate local Node harness passed 9 paper broker scenarios; strict TypeScript compilation passed for the paper broker module.
+- Full repository Vitest and Vite production build remain unverified because GitHub Actions jobs are failing before runner allocation (runner ID 0, empty runner name, no job steps). The latest workflow run must be checked again after this commit.
+- IndexedDB browser integration and the full mobile UI have not yet been exercised in a real browser.
+- Market orders use the latest completed candle close as a reference; spread, order-book depth, latency, partial fills, and market impact are not modelled.
+
