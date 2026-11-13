@@ -149,8 +149,8 @@ export function executePaperMarketOrder(
     const oldQuantity = current?.quantity ?? 0;
     const nextQuantity = oldQuantity + request.quantity;
     const averageEntryPrice = current
-      ? (current.averageEntryPrice * oldQuantity + executionPrice * request.quantity) / nextQuantity
-      : executionPrice;
+      ? (current.averageEntryPrice * oldQuantity + executionPrice * request.quantity + fee) / nextQuantity
+      : executionPrice + fee / request.quantity;
     positions[symbol] = { symbol, quantity: nextQuantity, averageEntryPrice, markPrice: request.referencePrice };
     cash -= notional + fee;
   } else {
