@@ -7,7 +7,10 @@ function response(payload: unknown, ok = true, status = 200): Response {
 
 describe("fetchKrakenCandles", () => {
   it("maps XBTUSD data and excludes Kraken's uncommitted final row", async () => {
-    const fetcher = vi.fn(async () => response({
+    let requestedUrl = "";
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      requestedUrl = String(input);
+      return response({
       error: [],
       result: {
         XXBTZUSD: [
@@ -17,13 +20,14 @@ describe("fetchKrakenCandles", () => {
         ],
         last: 1_700_010_000,
       },
-    }));
+    });
+    });
     const candles = await fetchKrakenCandles({ symbol: "BTCUSD", interval: "1h" }, fetcher);
     expect(candles).toEqual([
       { timestamp: 1_700_000_000_000, open: 100, high: 110, low: 90, close: 105, volume: 12 },
       { timestamp: 1_700_003_600_000, open: 105, high: 115, low: 100, close: 112, volume: 15 },
     ]);
-    expect(fetcher.mock.calls[0][0].toString()).toContain("pair=XBTUSD");
+    expect(requestedUrl).toContain("pair=XBTUSD");
   });
 
   it("rejects unsupported symbols and intervals", async () => {
