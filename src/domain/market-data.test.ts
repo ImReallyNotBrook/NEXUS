@@ -14,15 +14,15 @@ function provider(name: string, run: () => Promise<Candle[]>): MarketDataProvide
 
 describe("resolveMarketSnapshot", () => {
   it("uses the first healthy provider and caches its validated candles", async () => {
-    let saved: MarketSnapshot | null = null;
+    const saved: MarketSnapshot[] = [];
     const result = await resolveMarketSnapshot(
       [provider("primary", async () => candles), provider("secondary", async () => [])],
-      { load: async () => null, save: async (snapshot) => { saved = snapshot; } },
+      { load: async () => null, save: async (snapshot) => { saved.push(snapshot); } },
       { symbol: "BTCUSDT", interval: "1h", now: 1_700_010_000_000 },
     );
     expect(result.provider).toBe("primary");
     expect(result.stale).toBe(false);
-    expect(saved?.candles).toEqual(candles);
+    expect(saved[0]?.candles).toEqual(candles);
   });
 
   it("falls through to the independent provider when the primary fails", async () => {
