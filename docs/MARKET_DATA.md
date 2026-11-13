@@ -11,6 +11,15 @@ The domain service consumes `MarketDataProvider` implementations and returns a `
 
 Both adapters use public endpoints and require no API key. A provider response is validated by the shared OHLCV validator. Malformed or non-monotonic data is rejected and causes the resolver to try the next provider.
 
+## Historical backfill
+
+- Binance history pagination is sequential and bounded: at most 1,000 rows per request, 10,000 candles by default and 100,000 maximum per call.
+- The cursor advances from the last completed candle's open timestamp plus the fixed interval duration. A non-advancing page is rejected to prevent duplicate loops.
+- Fixed minute/hour/day/week intervals are supported. Calendar-month intervals are excluded because their duration is variable.
+- HTTP errors, including rate-limit responses, fail the backfill; there is no automatic retry loop. Callers should resume from the last persisted candle after a transient failure rather than repeat the entire range.
+- Historical candles are persisted locally in a separate IndexedDB object store, partitioned by symbol, interval and provider. Batch writes upsert by timestamp; reads can be restricted to inclusive time bounds.
+- Historical candle storage is separate from the latest-snapshot cache and paper account ledger.
+
 ## Resolution and fallback policy
 
 1. Try providers in declared priority order.
@@ -25,7 +34,7 @@ A local cache write failure does not invalidate a fresh provider response. Cache
 
 ## Local persistence
 
-Market snapshots share the versioned `nexus-local` IndexedDB database with paper accounts. Schema version 2 adds the `marketSnapshots` object store. Cache keys are symbol plus interval, so BTC/USD hourly data cannot overwrite BTC/USDT or another timeframe.
+Market snapshots share the versioned `nexus-local` IndexedDB database with paper accounts. Schema version 3 creates `paperAccounts`, `marketSnapshots` and `historicalCandles` under one shared upgrade routine. The history store has a `series` index for provider-specific lookups. Cache keys are symbol plus interval, so BTC/USD hourly data cannot overwrite BTC/USDT or another timeframe.
 
 The cache is device-local, not a cloud backup. Browser data clearing or eviction can remove it. Paper-account and market-snapshot adapters use one shared schema owner and database version, which creates both object stores in the same upgrade transaction and closes old connections on version changes.
 
