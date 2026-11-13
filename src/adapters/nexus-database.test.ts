@@ -39,13 +39,15 @@ describe("NEXUS IndexedDB schema", () => {
     database.close();
   });
 
-  it("shares the same in-flight database open for concurrent adapters", async () => {
+  it("supports concurrent adapter opens without downgrading the schema", async () => {
     const factory = versionedMemoryIndexedDb();
     const [first, second] = await Promise.all([
       openNexusDatabase(factory),
       openNexusDatabase(factory),
     ]);
-    expect(first).toBe(second);
+    expect(first.objectStoreNames.contains("paperAccounts")).toBe(true);
+    expect(second.objectStoreNames.contains("marketSnapshots")).toBe(true);
     first.close();
+    second.close();
   });
 });
