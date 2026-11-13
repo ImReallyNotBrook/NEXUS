@@ -6,7 +6,7 @@ function versionedMemoryIndexedDb(): IDBFactory {
   let version = 0;
   const database = {
     objectStoreNames: { contains: (name: string) => stores.has(name) },
-    createObjectStore: (name: string) => { stores.add(name); return {}; },
+    createObjectStore: (name: string) => { stores.add(name); return { createIndex: () => undefined }; },
     close: () => undefined,
   };
   return {
@@ -36,6 +36,7 @@ describe("NEXUS IndexedDB schema", () => {
     const database = await openNexusDatabase(factory);
     expect(database.objectStoreNames.contains("paperAccounts")).toBe(true);
     expect(database.objectStoreNames.contains("marketSnapshots")).toBe(true);
+    expect(database.objectStoreNames.contains("historicalCandles")).toBe(true);
     database.close();
   });
 
@@ -47,6 +48,7 @@ describe("NEXUS IndexedDB schema", () => {
     ]);
     expect(first.objectStoreNames.contains("paperAccounts")).toBe(true);
     expect(second.objectStoreNames.contains("marketSnapshots")).toBe(true);
+    expect(second.objectStoreNames.contains("historicalCandles")).toBe(true);
     first.close();
     second.close();
   });
