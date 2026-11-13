@@ -35,9 +35,21 @@ export interface ResearchBatchResult {
     candleCount: number;
     firstTimestamp: number;
     lastTimestamp: number;
+    /** Non-cryptographic fingerprint for reproducibility checks, not security. */
+    fingerprint: string;
   };
   config: ResearchPipelineConfig;
   candidateResults: ResearchCandidateResult[];
+}
+
+function fingerprintCandles(candles: readonly Candle[]): string {
+  const serialized = JSON.stringify(candles);
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < serialized.length; index += 1) {
+    hash ^= serialized.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return "fnv1a32:" + (hash >>> 0).toString(16).padStart(8, "0");
 }
 
 /**
@@ -88,6 +100,7 @@ export function runResearchBatch(
       candleCount: candles.length,
       firstTimestamp: candles[0].timestamp,
       lastTimestamp: candles[candles.length - 1].timestamp,
+      fingerprint: fingerprintCandles(candles),
     },
     config: {
       folds: { ...config.folds },
